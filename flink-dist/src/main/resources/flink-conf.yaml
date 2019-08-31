@@ -29,31 +29,31 @@
 # the conf/masters file, this will be taken care of automatically. Yarn/Mesos
 # automatically configure the host name based on the hostname of the node where the
 # JobManager runs.
-
+# rpc ip
 jobmanager.rpc.address: localhost
-
-# The RPC port where the JobManager is reachable.
-
 jobmanager.rpc.port: 6123
-
-
+# Timeout for akka ask calls.
+akka.ask.timeout: 300 s
+# Timeout for all blocking calls on the client side.
+akka.client.timeout: 3600 s
+# Maximum number of messages until another actor is executed by the same thread.
+akka.throughput: 128
+# Maximum size of messages which are sent between the JobManager and the TaskManagers.
+akka.framesize: 131072kB
+# Timeout for requesting and receiving heartbeat for both sender and receiver sides
+heartbeat.timeout: 360000
 # The heap size for the JobManager JVM
-
 jobmanager.heap.size: 1024m
-
-
 # The heap size for the TaskManager JVM
-
-taskmanager.heap.size: 12g
-
-
+taskmanager.heap.size: 16g
 # The number of task slots that each TaskManager offers. Each slot runs one parallel pipeline.
-
 taskmanager.numberOfTaskSlots: 8
-
 # The parallelism used for programs that did not specify and other parallelism.
-
 parallelism.default: 8
+# The time in seconds after which a completed job expires and is purged from the job store.
+jobstore.expiration-time: 1000000
+# The job store cache size in bytes which is used to keep completed jobs in memory.
+jobstore.cache-size: 8589934592
 
 # The default file system scheme and authority.
 # 
@@ -257,4 +257,3 @@ jobmanager.execution.failover-strategy: region
 # Interval in milliseconds for refreshing the monitored directories.
 #historyserver.archive.fs.refresh-interval: 10000
 
-akka.ask.timeout: 5 min
