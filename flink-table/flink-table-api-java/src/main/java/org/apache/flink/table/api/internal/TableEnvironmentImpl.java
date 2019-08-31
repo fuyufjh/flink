@@ -64,8 +64,6 @@ import org.apache.flink.table.sinks.TableSink;
 import org.apache.flink.table.sources.TableSource;
 import org.apache.flink.table.sources.TableSourceValidation;
 import org.apache.flink.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,9 +80,6 @@ import java.util.stream.Collectors;
  */
 @Internal
 public class TableEnvironmentImpl implements TableEnvironment {
-
-	private static final Logger LOG = LoggerFactory.getLogger(TableEnvironmentImpl.class);
-
 	// Flag that tells if the TableSource/TableSink used in this environment is stream table source/sink,
 	// and this should always be true. This avoids too many hard code.
 	private static final boolean IS_STREAM_TABLE = true;
@@ -310,9 +305,7 @@ public class TableEnvironmentImpl implements TableEnvironment {
 		Operation operation = operations.get(0);
 
 		if (operation instanceof QueryOperation && !(operation instanceof ModifyOperation)) {
-			Table table = createTable((QueryOperation) operation);
-			LOG.info("=== RUN SQL QUERY: " + query + "\n" + explain(table));
-			return table;
+			return createTable((QueryOperation) operation);
 		} else {
 			throw new ValidationException(
 				"Unsupported SQL query! sqlQuery() only accepts a single SQL query of type " +
