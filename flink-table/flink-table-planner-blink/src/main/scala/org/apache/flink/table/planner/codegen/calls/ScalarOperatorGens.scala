@@ -22,7 +22,7 @@ import org.apache.flink.table.dataformat._
 import org.apache.flink.table.planner.codegen.CodeGenUtils.{binaryRowFieldSetAccess, binaryRowSetNull, binaryWriterWriteField, binaryWriterWriteNull, _}
 import org.apache.flink.table.planner.codegen.GenerateUtils._
 import org.apache.flink.table.planner.codegen.GeneratedExpression.{ALWAYS_NULL, NEVER_NULL, NO_CODE}
-import org.apache.flink.table.planner.codegen.{CodeGenException, CodeGeneratorContext, GeneratedExpression}
+import org.apache.flink.table.planner.codegen.{CodeGenException, CodeGeneratorContext, GeneratedExpression, HashCodeGenerator}
 import org.apache.flink.table.planner.typeutils.TypeCoercion
 import org.apache.flink.table.runtime.types.LogicalTypeDataTypeConverter.fromLogicalTypeToDataType
 import org.apache.flink.table.runtime.types.PlannerTypeUtils
@@ -32,13 +32,18 @@ import org.apache.flink.table.runtime.typeutils.TypeCheckUtils._
 import org.apache.flink.table.types.logical.LogicalTypeRoot._
 import org.apache.flink.table.types.logical._
 import org.apache.flink.util.Preconditions.checkArgument
-
 import org.apache.calcite.avatica.util.DateTimeUtils.MILLIS_PER_DAY
 import org.apache.calcite.avatica.util.{DateTimeUtils, TimeUnitRange}
 import org.apache.calcite.util.BuiltInMethod
-
 import java.lang.{StringBuilder => JStringBuilder}
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.CompletableFuture
+
+import org.apache.flink.table.api.config.ExecutionConfigOptions
+import org.apache.flink.table.dataformat.util.BinaryRowUtil
+import org.apache.flink.table.functions.sql.internal.{SqlRuntimeFilterBuilderFunction, SqlRuntimeFilterFunction}
+import org.apache.flink.table.runtime.util.{BloomFilter, BloomFilterAcc, RuntimeFilterUtils}
+import org.apache.flink.util.SerializedValue
 
 import scala.collection.JavaConversions._
 
@@ -2181,4 +2186,99 @@ object ScalarOperatorGens {
         s"$method($operandTerm, 3, $zone)"
     }
 
+  def generateRuntimeFilter(
+      ctx: CodeGeneratorContext,
+      operands: Seq[GeneratedExpression],
+      func: SqlRuntimeFilterFunction): GeneratedExpression = {
+    val rfFuture = newName("rfFuture")
+    val futureField = classOf[CompletableFuture[_]].getCanonicalName
+    ctx.addReusableMember(s"private transient $futureField $rfFuture;")
+    val rfUtils = classOf[RuntimeFilterUtils].getCanonicalName
+    ctx.addReusableOpenStatement(s"$rfFuture = $rfUtils.asyncGetBroadcastBloomFilter(" +
+        s"getRuntimeContext(), ${"\""}${func.getBroadcastId}${"\""});")
+
+    val bfField = classOf[BloomFilter].getCanonicalName
+    val bf = newName("bf")
+    val rfResult = newName("rfResult")
+    val waitRf = ctx.tableConfig.getConfiguration.getBoolean(
+      ExecutionConfigOptions.SQL_EXEC_RUNTIME_FILTER_WAIT)
+    val (hashCode, hash) = runtimeFilterHash(operands.head)
+    var verify =
+      s"""
+         |$bfField $bf = ($bfField) $rfFuture.get();
+         |if ($bf != null) {
+         |  $hashCode
+         |  $rfResult = $bf.testHash($hash);
+         |}
+       """.stripMargin
+    if (!waitRf) {
+      verify =
+          s"""
+             |if ($rfFuture.isDone()) {
+             |  $verify
+             |}
+             """.stripMargin
+    }
+    val code =
+      s"""
+         |${operands.head.code}
+         |boolean $rfResult = true;
+         |$verify
+       """.stripMargin
+    GeneratedExpression(rfResult, "false", code, new BooleanType())
+  }
+
+  def generateRuntimeFilterBuilder(
+      ctx: CodeGeneratorContext,
+      operands: Seq[GeneratedExpression],
+      func: SqlRuntimeFilterBuilderFunction): GeneratedExpression = {
+    val bf = newName("bfField")
+    val bfField = classOf[BloomFilter].getCanonicalName
+    ctx.addReusableMember(s"private transient $bfField $bf;")
+    ctx.addReusableOpenStatement(s"$bf = new $bfField(" +
+        s"$bfField.suitableMaxNumEntries(${func.ndv.longValue()})," +
+        s"${func.minFpp(ctx.tableConfig)});")
+    val accTypeField = classOf[BloomFilterAcc].getCanonicalName
+    val quotaBid = "\"" + func.broadcastId + "\""
+
+    val accField = newName("acc")
+    val serializedValue = classOf[SerializedValue[_]].getCanonicalName
+    ctx.addReusableMember(s"$accTypeField $accField = new $accTypeField();")
+    ctx.addReusableOpenStatement(s"getRuntimeContext().addPreAggregatedAccumulator(" +
+        s"$quotaBid, $accField);")
+    // must endInput because close will be invoke in failover.
+    ctx.addReusableEndInputStatement(
+      s"""
+         |$accField.add($serializedValue.fromBytes($bfField.toBytes($bf)));
+         |getRuntimeContext().commitPreAggregatedAccumulator($quotaBid);
+       """.stripMargin)
+
+    val (hashCode, hash) = runtimeFilterHash(operands.head)
+    val code =
+      s"""
+         |${operands.head.code}
+         |$hashCode
+         |$bf.addHash($hash);
+       """.stripMargin
+    GeneratedExpression("true", "false", code, new BooleanType())
+  }
+
+  def runtimeFilterHash(expr: GeneratedExpression): (String, String) = {
+    val bf = classOf[BloomFilter].getCanonicalName
+    val brUtil = classOf[BinaryRowUtil].getCanonicalName
+    val hash = newName("rfHashCode")
+    val term = expr.resultTerm
+    val goHash = expr.resultType match {
+      case t if TypeCheckUtils.isNumeric(t) || TypeCheckUtils.isTemporal(t) =>
+        s"$bf.getLongHash($term)"
+      case _ => HashCodeGenerator.hashExpr(expr)
+    }
+    (s"""
+       |long $hash = 0;
+       |if (!${expr.nullTerm}) {
+       |  $hash = $goHash;
+       |}
+       |
+     """.stripMargin, hash)
+  }
 }
