@@ -65,7 +65,8 @@ case class FiniteValueInterval private(
     includeLower: Boolean = true,
     includeUpper: Boolean = true
 ) extends WithLower with WithUpper {
-  require(lower != null && upper != null && upper.getClass == lower.getClass)
+  // HACK: Integer and Long
+  require(lower != null && upper != null /*&& upper.getClass == lower.getClass*/)
 }
 
 /**
