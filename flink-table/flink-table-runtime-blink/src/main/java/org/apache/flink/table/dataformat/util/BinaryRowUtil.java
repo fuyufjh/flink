@@ -30,6 +30,7 @@ public class BinaryRowUtil {
 
 	public static final sun.misc.Unsafe UNSAFE = MemoryUtils.UNSAFE;
 	public static final int BYTE_ARRAY_BASE_OFFSET = UNSAFE.arrayBaseOffset(byte[].class);
+	public static final int LONG_ARRAY_OFFSET = UNSAFE.arrayBaseOffset(long[].class);
 
 	public static final BinaryRow EMPTY_ROW = new BinaryRow(0);
 

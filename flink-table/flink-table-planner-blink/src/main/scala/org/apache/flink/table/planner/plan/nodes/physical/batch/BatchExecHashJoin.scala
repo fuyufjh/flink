@@ -62,7 +62,8 @@ class BatchExecHashJoin(
     val leftIsBuild: Boolean,
     // true if build side is broadcast, else false
     val isBroadcast: Boolean,
-    val tryDistinctBuildRow: Boolean)
+    val tryDistinctBuildRow: Boolean,
+    var haveInsertRf: Boolean = false)
   extends BatchExecJoinBase(cluster, traitSet, leftRel, rightRel, condition, joinType) {
 
   private val (leftKeys, rightKeys) =
@@ -80,6 +81,10 @@ class BatchExecHashJoin(
     getJoinType == JoinRelType.SEMI,
     getJoinType == JoinRelType.ANTI)
 
+  def insertRuntimeFilter(): Unit = {
+    haveInsertRf = true
+  }
+
   override def copy(
       traitSet: RelTraitSet,
       conditionExpr: RexNode,
@@ -96,7 +101,8 @@ class BatchExecHashJoin(
       joinType,
       leftIsBuild,
       isBroadcast,
-      tryDistinctBuildRow)
+      tryDistinctBuildRow,
+      haveInsertRf)
   }
 
   override def explainTerms(pw: RelWriter): RelWriter = {

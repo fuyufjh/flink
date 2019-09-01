@@ -27,6 +27,7 @@ import org.apache.calcite.rel.core.RelFactories
 import org.apache.calcite.rel.logical.{LogicalIntersect, LogicalMinus, LogicalUnion}
 import org.apache.calcite.rel.rules._
 import org.apache.calcite.tools.{RuleSet, RuleSets}
+import org.apache.flink.table.planner.plan.rules.physical.runtimefilter._
 
 import scala.collection.JavaConverters._
 
@@ -400,5 +401,21 @@ object FlinkBatchRuleSets {
     BatchExecCorrelateRule.INSTANCE,
     // sink
     BatchExecSinkRule.INSTANCE
+  )
+
+  val RUNTIME_FILTER_RULES: RuleSet = RuleSets.ofList(
+    InsertRuntimeFilterRule.INSTANCE,
+    RuntimeFilterAggTransposeRule.INSTANCE,
+    RuntimeFilterExchangeTransposeRule.INSTANCE,
+    RfBuilderExchangeTransposeRule.INSTANCE,
+    RfBuilderJoinTransposeRule.INSTANCE,
+    RuntimeFilterBuilderMerger.INSTANCE,
+    FlinkCalcMergeRule.INSTANCE
+  )
+
+  val RUNTIME_FILTER_REMOVE_RULES: RuleSet = RuleSets.ofList(
+    UselessRuntimeFilterRemoveRule.INSTANCE,
+    UselessRfBuilderRemoveRule.INSTANCE,
+    FlinkCalcRemoveRule.INSTANCE
   )
 }

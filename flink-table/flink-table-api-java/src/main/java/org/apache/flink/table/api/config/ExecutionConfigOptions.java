@@ -153,6 +153,61 @@ public class ExecutionConfigOptions {
 			.withDescription("The async timeout for the asynchronous operation to complete.");
 
 	// ------------------------------------------------------------------------
+	//  Runtime Filter Options
+	// ------------------------------------------------------------------------
+
+	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_ENABLED =
+		key("sql.exec.runtime-filter.enabled")
+			.defaultValue(false)
+			.withDescription("Runtime filter for hash join. The Build side of HashJoin will " +
+				"build a bloomFilter in advance to filter the data on the probe side.");
+
+	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_WAIT =
+		key("sql.exec.runtime-filter.wait")
+			.defaultValue(false)
+			.withDescription("Weather to let probe side to wait bloom filter.");
+
+	public static final ConfigOption<Integer> SQL_EXEC_RUNTIME_FILTER_SIZE_MAX =
+		key("sql.exec.runtime-filter.size.max.mb")
+			.defaultValue(10)
+			.withDescription("The max size of MB to BloomFilter. A too large BloomFilter will cause " +
+				"the JobMaster bandwidth to fill up and affect scheduling.");
+
+	public static final ConfigOption<Double> SQL_EXEC_RUNTIME_FILTER_PROBE_FILTER_DEGREE_MIN =
+		key("sql.exec.runtime-filter.probe.filter-degree.min")
+			.defaultValue(0.5)
+			.withDescription("The minimum filtering degree of the probe side to enable runtime filter." +
+				"(1 - buildNdv / probeNdv) * (1 - minFpp) >= minProbeFilter.");
+
+	public static final ConfigOption<Long> SQL_EXEC_RUNTIME_FILTER_PROBE_ROW_COUNT_MIN =
+		key("sql.exec.runtime-filter.probe.row-count.min")
+			.defaultValue(100000000L)
+			.withDescription("The minimum row count of probe side to enable runtime filter." +
+				"Probe.rowCount >= minProbeRowCount.");
+
+	public static final ConfigOption<Double> SQL_EXEC_RUNTIME_FILTER_BUILD_PROBE_ROW_COUNT_RATIO_MAX =
+		key("sql.exec.runtime-filter.build-probe.row-count-ratio.max")
+			.defaultValue(0.5)
+			.withDescription("The rowCount of the build side and the rowCount of the probe should " +
+				"have a certain ratio before using the RuntimeFilter. " +
+				"Builder.rowCount / probe.rowCount <= maxRowCountRatio.");
+
+	public static final ConfigOption<Integer> SQL_EXEC_RUNTIME_FILTER_ROW_COUNT_NUM_BITS_RATIO =
+		key("sql.exec.runtime-filter.row-count.num-bits.ratio")
+			.defaultValue(40)
+			.withDescription("A ratio between the probe row count and the BloomFilter size. If the " +
+				"probe row count is too small, we should not use too large BloomFilter. maxBfBits = " +
+				"Math.min(probeRowCount / ratioOfRowAndBits, " + SQL_EXEC_RUNTIME_FILTER_SIZE_MAX + ")");
+
+	public static final ConfigOption<Double> SQL_EXEC_RUNTIME_FILTER_BUILDER_PUSH_DOWN_RATIO_MAX =
+		key("sql.exec.runtime-filter.builder.push-down.ratio.max")
+			.defaultValue(1.2)
+			.withDescription("If the join key is the same, we can push down the BloomFilter" +
+				" builder to the input node build, but we need to ensure that the NDV " +
+				"and row count doesn't change much. " +
+				"PushDownNdv / ndv <= maxRatio && pushDownRowCount / rowCount <= maxRatio.");
+
+	// ------------------------------------------------------------------------
 	//  MiniBatch Options
 	// ------------------------------------------------------------------------
 	@Documentation.TableOption(execMode = Documentation.ExecMode.STREAMING)
