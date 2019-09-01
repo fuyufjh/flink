@@ -205,8 +205,14 @@ object QueryBenchmark {
           stats
         }
         case _ => {
-          System.out.println("do not existed tableStats:")
-          null
+          val stats = PredefinedStatistics.loadStats(tableName, params.scaleFactor)
+          if (stats != null) {
+            tableStatsMap += (tableName -> stats)
+            stats
+          } else {
+            System.out.println("do not existed tableStats:")
+            null
+          }
         }
       }
       if (tableStats != null) {
