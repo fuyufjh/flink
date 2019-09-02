@@ -53,8 +53,11 @@ class InsertRuntimeFilterRule
     val enableRuntimeFilter = conf.getConfiguration.getBoolean(
       ExecutionConfigOptions.SQL_EXEC_RUNTIME_FILTER_ENABLED)
 
+    val enableRuntimeFilterForBroadcastJoin = conf.getConfiguration.getBoolean(
+      ExecutionConfigOptions.SQL_EXEC_RUNTIME_FILTER_BROADCAST_JOIN_ENABLED)
+
     enableRuntimeFilter &&
-        !join.isBroadcast && // now not support broadcast join.
+        (!join.isBroadcast || enableRuntimeFilterForBroadcastJoin) && // Eric - modified
         (join.flinkJoinType == INNER || join.flinkJoinType == SEMI) &&
         !join.haveInsertRf
   }
