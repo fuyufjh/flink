@@ -55,10 +55,10 @@ import scala.collection.JavaConversions._
   * @param table   wrapped flink table
   */
 class FlinkRelOptTable protected(
-    schema: RelOptSchema,
-    rowType: RelDataType,
-    names: JList[String],
-    table: FlinkTable)
+                                  schema: RelOptSchema,
+                                  rowType: RelDataType,
+                                  names: JList[String],
+                                  table: FlinkTable)
   extends AbstractPreparingTable {
 
   // Default value of rowCount if there is no available stats.
@@ -67,7 +67,7 @@ class FlinkRelOptTable protected(
 
   // unique keySets of current table.
   lazy val uniqueKeysSet: Option[JSet[ImmutableBitSet]] = {
-    table.getStatistic match {
+    getPreDefinedStatistics match {
       case statistic: FlinkStatistic =>
         val uniqueKeys = statistic.getUniqueKeys
         if (uniqueKeys == null) {
@@ -173,7 +173,7 @@ class FlinkRelOptTable protected(
   override def getMonotonicity(columnName: String): SqlMonotonicity = {
     val columnIdx = rowType.getFieldNames.indexOf(columnName)
     if (columnIdx >= 0) {
-      for (collation: RelCollation <- table.getStatistic.getCollations) {
+      for (collation: RelCollation <- getPreDefinedStatistics.getCollations) {
         val fieldCollation: RelFieldCollation = collation.getFieldCollations.get(0)
         if (fieldCollation.getFieldIndex == columnIdx) {
           return fieldCollation.direction.monotonicity
@@ -187,8 +187,8 @@ class FlinkRelOptTable protected(
     * Returns flink table statistics.
     */
   def getFlinkStatistic: FlinkStatistic = {
-    if (table.getStatistic != null) {
-      table.getStatistic
+    if (getPreDefinedStatistics != null) {
+      getPreDefinedStatistics
     } else {
       FlinkStatistic.UNKNOWN
     }
@@ -198,8 +198,8 @@ class FlinkRelOptTable protected(
     * Returns an estimate of the number of rows in the table.
     */
   override def getRowCount: Double =
-    if (table.getStatistic != null) {
-      table.getStatistic match {
+    if (getPreDefinedStatistics != null) {
+      getPreDefinedStatistics match {
         case stats: FlinkStatistic =>
           if (stats.getRowCount != null) {
             stats.getRowCount
@@ -255,8 +255,8 @@ class FlinkRelOptTable protected(
     * are represented over other tables using [[RelReferentialConstraint]] nodes.
     */
   override def getReferentialConstraints: JList[RelReferentialConstraint] = {
-    if (table.getStatistic != null) {
-      table.getStatistic.getReferentialConstraints
+    if (getPreDefinedStatistics != null) {
+      getPreDefinedStatistics.getReferentialConstraints
     } else {
       ImmutableList.of()
     }
@@ -270,8 +270,8 @@ class FlinkRelOptTable protected(
     * @see [[org.apache.calcite.rel.metadata.RelMetadataQuery#collations(RelNode)]]
     */
   override def getCollationList: JList[RelCollation] = {
-    if (table.getStatistic != null) {
-      table.getStatistic.getCollations
+    if (getPreDefinedStatistics != null) {
+      getPreDefinedStatistics.getCollations
     } else {
       ImmutableList.of()
     }
@@ -284,8 +284,8 @@ class FlinkRelOptTable protected(
     * @see [[org.apache.calcite.rel.metadata.RelMetadataQuery#distribution(RelNode)]]
     */
   override def getDistribution: RelDistribution = {
-    if (table.getStatistic != null) {
-      table.getStatistic.getDistribution
+    if (getPreDefinedStatistics != null) {
+      getPreDefinedStatistics.getDistribution
     } else {
       FlinkRelDistributionTraitDef.INSTANCE.getDefault
     }
@@ -309,9 +309,9 @@ class FlinkRelOptTable protected(
     * @return true if the column has a default value
     */
   override def columnHasDefaultValue(
-      rowType: RelDataType,
-      ordinal: Int,
-      initializerContext: InitializerContext): Boolean = false
+                                      rowType: RelDataType,
+                                      ordinal: Int,
+                                      initializerContext: InitializerContext): Boolean = false
 
   override def getColumnStrategies: JList[ColumnStrategy] = RelOptTableImpl.columnStrategies(this)
 
@@ -322,14 +322,24 @@ class FlinkRelOptTable protected(
     * We recognize all tables in FLink are temporal as they are changeable.
     */
   override def isTemporal: Boolean = true
+
+  private var predefinedStatistics : FlinkStatistic = null
+
+  def getPreDefinedStatistics: FlinkStatistic = {
+    if (predefinedStatistics != null)
+      return predefinedStatistics
+    val tableStats = PredefinedStatistics.loadStats(names.get(names.size()-1).toLowerCase)
+    predefinedStatistics = new FlinkStatistic(tableStats)
+    return predefinedStatistics
+  }
 }
 
 object FlinkRelOptTable {
 
   def create(schema: RelOptSchema,
-      rowType: RelDataType,
-      names: JList[String],
-      table: FlinkTable): FlinkRelOptTable =
+             rowType: RelDataType,
+             names: JList[String],
+             table: FlinkTable): FlinkRelOptTable =
     new FlinkRelOptTable(schema, rowType, names, table)
 
 }

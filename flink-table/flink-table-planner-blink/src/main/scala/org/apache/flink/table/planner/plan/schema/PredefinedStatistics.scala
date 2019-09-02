@@ -1,4 +1,4 @@
-package org.apache.flink.table.examples.scala
+package org.apache.flink.table.planner.plan.schema
 
 import org.apache.flink.table.api.DataTypes
 import org.apache.flink.table.plan.stats.{ColumnStats, TableStats}
@@ -467,7 +467,6 @@ object PredefinedStatistics {
     "web_suite_number" -> new ColumnStats(19L, 0L, 8.25D, 9, null, null),
     "web_rec_end_date" -> new ColumnStats(3L, 12L, 12.0D, 12, null, null),
     "web_close_date_sk" -> new ColumnStats(8L, 4L, 8.0D, 8, convertToNumber("2447131",DataTypes.BIGINT), convertToNumber("2443328",DataTypes.BIGINT)),
-    "web_company_name" -> new ColumnStats(5L, 0L, 3.75D, 5, null, null),
     "web_manager" -> new ColumnStats(16L, 0L, 11.958333333333334D, 17, null, null),
     "web_mkt_class" -> new ColumnStats(18L, 0L, 37.208333333333336D, 49, null, null),
     "web_mkt_id" -> new ColumnStats(6L, 0L, 8.0D, 8, convertToNumber("6",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
@@ -483,37 +482,33 @@ object PredefinedStatistics {
     "web_site_id" -> new ColumnStats(12L, 0L, 16.0D, 16, null, null),
     "web_street_name" -> new ColumnStats(22L, 0L, 7.458333333333333D, 15, null, null)))
 
-  def loadStats(table: String, sf: Int): TableStats = {
-    if (sf == 100 || true) {
-      table match {
-        case "catalog_sales" => CATALOG_SALES_100
-        case "catalog_returns" => CATALOG_RETURNS_100
-        case "inventory" => INVENTORY_100
-        case "store_sales" => STORE_SALES_100
-        case "store_returns" => STORE_RETURNS_100
-        case "web_sales" => WEB_SALES_100
-        case "web_returns" => WEB_RETURNS_100
-        case "call_center" => CALL_CENTER_100
-        case "catalog_page" => CATALOG_PAGE_100
-        case "customer" => CUSTOMER_100
-        case "customer_address" => CUSTOMER_ADDRESS_100
-        case "customer_demographics" => CUSTOMER_DEMOGRAPHICS_100
-        case "date_dim" => DATE_DIM_100
-        case "household_demographics" => HOUSEHOLD_DEMOGRAPHICS_100
-        case "income_band" => INCOME_BAND_100
-        case "item" => ITEM_100
-        case "promotion" => PROMOTION_100
-        case "reason" => REASON_100
-        case "ship_mode" => SHIP_MODE_100
-        case "store" => STORE_100
-        case "time_dim" => TIME_DIM_100
-        case "warehouse" => WAREHOUSE_100
-        case "web_page" => WEB_PAGE_100
-        case "web_site" => WEB_SITE_100
-        case _ => null
-      }
-    } else {
-      null
+  def loadStats(table: String): TableStats = {
+    table match {
+      case "catalog_sales" => CATALOG_SALES_100
+      case "catalog_returns" => CATALOG_RETURNS_100
+      case "inventory" => INVENTORY_100
+      case "store_sales" => STORE_SALES_100
+      case "store_returns" => STORE_RETURNS_100
+      case "web_sales" => WEB_SALES_100
+      case "web_returns" => WEB_RETURNS_100
+      case "call_center" => CALL_CENTER_100
+      case "catalog_page" => CATALOG_PAGE_100
+      case "customer" => CUSTOMER_100
+      case "customer_address" => CUSTOMER_ADDRESS_100
+      case "customer_demographics" => CUSTOMER_DEMOGRAPHICS_100
+      case "date_dim" => DATE_DIM_100
+      case "household_demographics" => HOUSEHOLD_DEMOGRAPHICS_100
+      case "income_band" => INCOME_BAND_100
+      case "item" => ITEM_100
+      case "promotion" => PROMOTION_100
+      case "reason" => REASON_100
+      case "ship_mode" => SHIP_MODE_100
+      case "store" => STORE_100
+      case "time_dim" => TIME_DIM_100
+      case "warehouse" => WAREHOUSE_100
+      case "web_page" => WEB_PAGE_100
+      case "web_site" => WEB_SITE_100
+      case _ => null
     }
   }
 
@@ -536,3 +531,5 @@ object PredefinedStatistics {
       null
   }
 }
+
+
