@@ -51,6 +51,7 @@ import org.apache.flink.runtime.jobgraph.OperatorID;
 import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.UnregisteredMetricGroups;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.query.TaskKvStateRegistry;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
@@ -171,6 +172,7 @@ public class StreamTaskTerminationTest extends TestLogger {
 			shuffleEnvironment,
 			new KvStateService(new KvStateRegistry(), null, null),
 			mock(BroadcastVariableManager.class),
+			mock(AccumulatorAggregationManager.class),
 			new TaskEventDispatcher(),
 			new TestTaskStateManager(),
 			mock(TaskManagerActions.class),

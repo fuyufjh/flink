@@ -45,6 +45,7 @@ import org.apache.flink.metrics.MetricGroup;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
@@ -134,6 +135,28 @@ class CepRuntimeContext implements RuntimeContext {
 	@Override
 	public Map<String, Accumulator<?, ?>> getAllAccumulators() {
 		throw new UnsupportedOperationException("Accumulators are not supported.");
+	}
+
+	@Override
+	public <V, A extends Serializable> void addPreAggregatedAccumulator(
+		String name, Accumulator<V, A> accumulator) {
+		throw new UnsupportedOperationException("PreAggregatedAccumulator is not supported.");
+	}
+
+	@Override
+	public <V, A extends Serializable> Accumulator<V, A> getPreAggregatedAccumulator(String name) {
+		throw new UnsupportedOperationException("PreAggregatedAccumulator is not supported.");
+	}
+
+	@Override
+	public void commitPreAggregatedAccumulator(String name) {
+		throw new UnsupportedOperationException("PreAggregatedAccumulator is not supported.");
+	}
+
+	@Override
+	public <V, A extends Serializable> CompletableFuture<Accumulator<V, A>> queryPreAggregatedAccumulator(
+		String name) {
+		throw new UnsupportedOperationException("PreAggregatedAccumulator is not supported.");
 	}
 
 	@Override

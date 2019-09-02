@@ -19,6 +19,7 @@
 package org.apache.flink.runtime.operators.chaining;
 
 import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.flink.api.common.accumulators.AbstractAccumulatorRegistry;
 import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.api.common.functions.Function;
 import org.apache.flink.api.common.functions.RuntimeContext;
@@ -64,7 +65,7 @@ public abstract class ChainedDriver<IT, OT> implements Collector<IT> {
 	
 	public void setup(TaskConfig config, String taskName, Collector<OT> outputCollector,
 			AbstractInvokable parent, ClassLoader userCodeClassLoader, ExecutionConfig executionConfig,
-			Map<String, Accumulator<?,?>> accumulatorMap)
+			AbstractAccumulatorRegistry accumulatorRegistry)
 	{
 		this.config = config;
 		this.taskName = taskName;
@@ -80,7 +81,7 @@ public abstract class ChainedDriver<IT, OT> implements Collector<IT> {
 			this.udfContext = ((BatchTask<?, ?>) parent).createRuntimeContext(metrics);
 		} else {
 			this.udfContext = new DistributedRuntimeUDFContext(env.getTaskInfo(), userCodeClassLoader,
-					parent.getExecutionConfig(), env.getDistributedCacheEntries(), accumulatorMap, metrics
+					parent.getExecutionConfig(), env.getDistributedCacheEntries(), accumulatorRegistry, metrics
 			);
 		}
 

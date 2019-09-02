@@ -88,8 +88,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createDescriptorCapturingMockOp(descriptorCapture, config),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		ValueStateDescriptor<TaskInfo> descr = new ValueStateDescriptor<>("name", TaskInfo.class);
 		context.getState(descr);
@@ -112,8 +111,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createDescriptorCapturingMockOp(descriptorCapture, config),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		@SuppressWarnings("unchecked")
 		ReduceFunction<TaskInfo> reducer = (ReduceFunction<TaskInfo>) mock(ReduceFunction.class);
@@ -141,8 +139,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createDescriptorCapturingMockOp(descriptorCapture, config),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		@SuppressWarnings("unchecked")
 		AggregateFunction<String, TaskInfo, String> aggregate = (AggregateFunction<String, TaskInfo, String>) mock(AggregateFunction.class);
@@ -170,8 +167,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createDescriptorCapturingMockOp(descriptorCapture, config),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		@SuppressWarnings("unchecked")
 		FoldFunction<String, TaskInfo> folder = (FoldFunction<String, TaskInfo>) mock(FoldFunction.class);
@@ -199,8 +195,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createDescriptorCapturingMockOp(descriptorCapture, config),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		ListStateDescriptor<TaskInfo> descr = new ListStateDescriptor<>("name", TaskInfo.class);
 		context.getListState(descr);
@@ -221,8 +216,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createListPlainMockOp(),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		ListStateDescriptor<String> descr = new ListStateDescriptor<>("name", String.class);
 		ListState<String> state = context.getListState(descr);
@@ -242,8 +236,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createDescriptorCapturingMockOp(descriptorCapture, config),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		MapStateDescriptor<String, TaskInfo> descr =
 				new MapStateDescriptor<>("name", String.class, TaskInfo.class);
@@ -263,8 +256,7 @@ public class StreamingRuntimeContextTest {
 
 		StreamingRuntimeContext context = new StreamingRuntimeContext(
 				createMapPlainMockOp(),
-				createMockEnvironment(),
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+				createMockEnvironment());
 
 		MapStateDescriptor<Integer, String> descr = new MapStateDescriptor<>("name", Integer.class, String.class);
 		MapState<Integer, String> state = context.getMapState(descr);

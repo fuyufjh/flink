@@ -18,6 +18,8 @@
 
 package org.apache.flink.table.planner.expressions.utils
 
+import java.{io, util}
+
 import org.apache.flink.api.common.TaskInfo
 import org.apache.flink.api.common.functions.util.RuntimeUDFContext
 import org.apache.flink.api.common.functions.{MapFunction, RichFunction, RichMapFunction}
@@ -39,7 +41,6 @@ import org.apache.flink.table.types.DataType
 import org.apache.flink.table.types.logical.{RowType, VarCharType}
 import org.apache.flink.table.types.utils.TypeConversions
 import org.apache.flink.types.Row
-
 import org.apache.calcite.plan.hep.{HepPlanner, HepProgramBuilder}
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.rel.logical.{LogicalCalc, LogicalTableScan}
@@ -49,8 +50,10 @@ import org.apache.calcite.sql.`type`.SqlTypeName.VARCHAR
 import org.junit.Assert.{assertEquals, fail}
 import org.junit.rules.ExpectedException
 import org.junit.{After, Before, Rule}
-
 import java.util.Collections
+import java.util.concurrent.CompletableFuture
+
+import org.apache.flink.api.common.accumulators.{AbstractAccumulatorRegistry, Accumulator}
 
 import scala.collection.mutable
 
@@ -133,12 +136,24 @@ abstract class ExpressionTestBase {
     // call setRuntimeContext method and open method for RichFunction
     if (isRichFunction) {
       val richMapper = mapper.asInstanceOf[RichMapFunction[_, _]]
+      val testRegistry = new AbstractAccumulatorRegistry {
+        override def queryPreAggregatedAccumulator[V, A <: io.Serializable](name: String) =
+          new CompletableFuture[Accumulator[V, A]]
+
+        override def addPreAggregatedAccumulator[V, A <: io.Serializable](name: String,
+                                                                          accumulator: Accumulator[V, A]): Unit = ???
+
+        override def getPreAggregatedAccumulators:
+        util.Map[String, Accumulator[_, _ <: io.Serializable]] = ???
+
+        override def commitPreAggregatedAccumulator(name: String): Unit = ???
+      }
       val t = new RuntimeUDFContext(
         new TaskInfo("ExpressionTest", 1, 0, 1, 1),
         null,
         env.getConfig,
         Collections.emptyMap(),
-        Collections.emptyMap(),
+        testRegistry,
         null)
       richMapper.setRuntimeContext(t)
       richMapper.open(new Configuration())

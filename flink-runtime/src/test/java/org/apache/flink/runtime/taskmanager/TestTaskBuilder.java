@@ -46,6 +46,8 @@ import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
 import org.apache.flink.runtime.metrics.groups.UnregisteredMetricGroups;
 import org.apache.flink.runtime.operators.testutils.MockInputSplitProvider;
+import org.apache.flink.runtime.preaggregatedaccumulators.EmptyOperationAccumulatorAggregationManager;
+import org.apache.flink.runtime.preaggregatedaccumulators.RPCBasedAccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.state.TestTaskStateManager;
@@ -192,6 +194,7 @@ public final class TestTaskBuilder {
 			shuffleEnvironment,
 			kvStateService,
 			new BroadcastVariableManager(),
+			new EmptyOperationAccumulatorAggregationManager(),
 			new TaskEventDispatcher(),
 			new TestTaskStateManager(),
 			taskManagerActions,

@@ -55,7 +55,6 @@ public class MockStreamTaskBuilder {
 	private ProcessingTimeService processingTimeService = new TestProcessingTimeService();
 	private StreamTaskStateInitializer streamTaskStateInitializer;
 	private BiConsumer<String, Throwable> handleAsyncException = (message, throwable) -> { };
-	private Map<String, Accumulator<?, ?>> accumulatorMap = Collections.emptyMap();
 
 	public MockStreamTaskBuilder(Environment environment) throws Exception {
 		this.environment = environment;
@@ -127,7 +126,6 @@ public class MockStreamTaskBuilder {
 			streamStatusMaintainer,
 			checkpointStorage,
 			processingTimeService,
-			handleAsyncException,
-			accumulatorMap);
+			handleAsyncException);
 	}
 }

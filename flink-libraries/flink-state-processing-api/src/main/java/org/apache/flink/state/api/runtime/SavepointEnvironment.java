@@ -41,6 +41,7 @@ import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
+import org.apache.flink.runtime.preaggregatedaccumulators.EmptyOperationAccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.query.TaskKvStateRegistry;
 import org.apache.flink.runtime.state.TaskStateManager;
@@ -97,7 +98,9 @@ public class SavepointEnvironment implements Environment {
 		this.registry = new KvStateRegistry().createTaskRegistry(jobID, vertexID);
 		this.taskStateManager = new SavepointTaskStateManager(prioritizedOperatorSubtaskState);
 		this.ioManager = new IOManagerAsync();
-		this.accumulatorRegistry = new AccumulatorRegistry(jobID, attemptID);
+
+		// Eric: Dont know what to pass to accumulatorAggregationManager
+		this.accumulatorRegistry = new AccumulatorRegistry(jobID, vertexID, indexOfSubtask, attemptID, null);
 	}
 
 	@Override

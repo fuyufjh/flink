@@ -64,6 +64,7 @@ import org.apache.flink.runtime.operators.testutils.DummyEnvironment;
 import org.apache.flink.runtime.operators.testutils.MockEnvironment;
 import org.apache.flink.runtime.operators.testutils.MockEnvironmentBuilder;
 import org.apache.flink.runtime.operators.testutils.MockInputSplitProvider;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.state.AbstractKeyedStateBackend;
@@ -926,6 +927,7 @@ public class StreamTaskTest extends TestLogger {
 			shuffleEnvironment,
 			new KvStateService(new KvStateRegistry(), null, null),
 			mock(BroadcastVariableManager.class),
+			mock(AccumulatorAggregationManager.class),
 			new TaskEventDispatcher(),
 			taskStateManager,
 			taskManagerActions,

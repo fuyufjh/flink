@@ -64,8 +64,7 @@ public class SourceFunctionUtil {
 
 			RuntimeContext runtimeContext = new StreamingRuntimeContext(
 				operator,
-				environment,
-				new HashMap<>());
+				environment);
 			((RichFunction) sourceFunction).setRuntimeContext(runtimeContext);
 			((RichFunction) sourceFunction).open(new Configuration());
 

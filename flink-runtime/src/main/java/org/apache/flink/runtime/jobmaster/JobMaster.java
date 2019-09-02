@@ -19,6 +19,7 @@
 package org.apache.flink.runtime.jobmaster;
 
 import org.apache.flink.api.common.JobID;
+import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -60,6 +61,8 @@ import org.apache.flink.runtime.messages.FlinkJobNotFoundException;
 import org.apache.flink.runtime.messages.checkpoint.DeclineCheckpoint;
 import org.apache.flink.runtime.messages.webmonitor.JobDetails;
 import org.apache.flink.runtime.metrics.groups.JobManagerJobMetricGroup;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationCoordinator;
+import org.apache.flink.runtime.preaggregatedaccumulators.CommitAccumulator;
 import org.apache.flink.runtime.query.KvStateLocation;
 import org.apache.flink.runtime.query.UnknownKvStateLocation;
 import org.apache.flink.runtime.registration.RegisteredRpcConnection;
@@ -93,10 +96,12 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -143,6 +148,8 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 	private final HeartbeatServices heartbeatServices;
 
 	private final JobManagerJobMetricGroupFactory jobMetricGroupFactory;
+
+	private final AccumulatorAggregationCoordinator accumulatorAggregationCoordinator;
 
 	private final ScheduledExecutorService scheduledExecutorService;
 
@@ -234,6 +241,8 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		this.schedulerNGFactory = checkNotNull(schedulerNGFactory);
 		this.heartbeatServices = checkNotNull(heartbeatServices);
 		this.jobMetricGroupFactory = checkNotNull(jobMetricGroupFactory);
+
+		this.accumulatorAggregationCoordinator = new AccumulatorAggregationCoordinator();
 
 		final String jobName = jobGraph.getName();
 		final JobID jid = jobGraph.getJobID();
@@ -682,6 +691,18 @@ public class JobMaster extends FencedRpcEndpoint<JobMasterId> implements JobMast
 		accumulator = aggregateFunction.add(aggregand, accumulator);
 		accumulators.put(aggregateName, accumulator);
 		return CompletableFuture.completedFuture(aggregateFunction.getResult(accumulator));
+	}
+
+	@Override
+	public void commitPreAggregatedAccumulator(List<CommitAccumulator> commitAccumulators) {
+		for (CommitAccumulator commitAccumulator : commitAccumulators) {
+			accumulatorAggregationCoordinator.commitPreAggregatedAccumulator(schedulerNG.requestJob(), commitAccumulator);
+		}
+	}
+
+	@Override
+	public <V, A extends Serializable> CompletableFuture<Accumulator<V, A>> queryPreAggregatedAccumulator(String name) {
+		return accumulatorAggregationCoordinator.queryPreAggregatedAccumulator(name);
 	}
 
 	//----------------------------------------------------------------------------------------------

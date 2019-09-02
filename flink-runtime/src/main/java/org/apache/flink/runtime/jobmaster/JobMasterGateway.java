@@ -18,6 +18,7 @@
 
 package org.apache.flink.runtime.jobmaster;
 
+import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.api.common.functions.AggregateFunction;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.runtime.checkpoint.CheckpointCoordinatorGateway;
@@ -35,6 +36,7 @@ import org.apache.flink.runtime.jobgraph.JobStatus;
 import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.messages.Acknowledge;
 import org.apache.flink.runtime.messages.webmonitor.JobDetails;
+import org.apache.flink.runtime.preaggregatedaccumulators.CommitAccumulator;
 import org.apache.flink.runtime.registration.RegistrationResponse;
 import org.apache.flink.runtime.resourcemanager.ResourceManagerId;
 import org.apache.flink.runtime.rest.handler.legacy.backpressure.OperatorBackPressureStatsResponse;
@@ -47,7 +49,9 @@ import org.apache.flink.runtime.taskmanager.TaskManagerLocation;
 
 import javax.annotation.Nullable;
 
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -270,4 +274,19 @@ public interface JobMasterGateway extends
 	 * @return The updated aggregate
 	 */
 	CompletableFuture<Object> updateGlobalAggregate(String aggregateName, Object aggregand, byte[] serializedAggregationFunction);
+
+	/**
+	 * Commits a list of aggregated accumulator values.
+	 *
+	 * @param commitAccumulators accumulators to commit.
+	 */
+	void commitPreAggregatedAccumulator(List<CommitAccumulator> commitAccumulators);
+
+	/**
+	 * Queries an aggregated accumulator with the specific name.
+	 *
+	 * @param name the name of the target accumulator.
+	 * @return Future which is completed with the result of querying accumulator.
+	 */
+	<V, A extends Serializable> CompletableFuture<Accumulator<V, A>> queryPreAggregatedAccumulator(String name);
 }

@@ -50,8 +50,7 @@ public class MockStreamingRuntimeContext extends StreamingRuntimeContext {
 			new MockEnvironmentBuilder()
 				.setTaskName("mockTask")
 				.setMemorySize(4 * MemoryManager.DEFAULT_PAGE_SIZE)
-				.build(),
-			Collections.emptyMap());
+				.build());
 
 		this.isCheckpointingEnabled = isCheckpointingEnabled;
 		this.numParallelSubtasks = numParallelSubtasks;

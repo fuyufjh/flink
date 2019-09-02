@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * A streaming {@link RuntimeContext} which delegates to the underlying batch {@code RuntimeContext}
@@ -252,6 +253,26 @@ public final class SavepointRuntimeContext implements RuntimeContext {
 
 	public void disableStateRegistration() throws Exception {
 		stateRegistrationAllowed = false;
+	}
+
+	@Override
+	public <V, A extends Serializable> void addPreAggregatedAccumulator(String name, Accumulator<V, A> accumulator) {
+		ctx.addPreAggregatedAccumulator(name, accumulator);
+	}
+
+	@Override
+	public <V, A extends Serializable> Accumulator<V, A> getPreAggregatedAccumulator(String name) {
+		return ctx.getPreAggregatedAccumulator(name);
+	}
+
+	@Override
+	public void commitPreAggregatedAccumulator(String name) {
+		ctx.commitPreAggregatedAccumulator(name);
+	}
+
+	@Override
+	public <V, A extends Serializable> CompletableFuture<Accumulator<V, A>> queryPreAggregatedAccumulator(String name) {
+		return ctx.queryPreAggregatedAccumulator(name);
 	}
 }
 
