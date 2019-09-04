@@ -22,8 +22,9 @@ import org.apache.flink.configuration.Configuration
 import org.apache.flink.table.api.config.OptimizerConfigOptions
 import org.apache.flink.table.planner.plan.nodes.FlinkConventions
 import org.apache.flink.table.planner.plan.rules.FlinkBatchRuleSets
-
 import org.apache.calcite.plan.hep.HepMatchOrder
+import org.apache.calcite.tools.RuleSets
+import org.apache.flink.table.planner.plan.rules.logical.LeftJoinToInnerJoinRule
 
 /**
   * Defines a sequence of programs to optimize flink batch table plan.
@@ -162,6 +163,7 @@ object FlinkBatchProgram {
         .setHepRulesExecutionType(HEP_RULES_EXECUTION_TYPE.RULE_COLLECTION)
         .setHepMatchOrder(HepMatchOrder.BOTTOM_UP)
         .add(FlinkBatchRuleSets.JOIN_COND_EQUAL_TRANSFER_RULES)
+        .add(RuleSets.ofList(LeftJoinToInnerJoinRule.INNER_LEFT_INSTANCE))
         .build())
 
     // window rewrite
