@@ -41,8 +41,7 @@ public class LeftJoinToInnerJoinRule extends RelOptRule {
 	public void onMatch(RelOptRuleCall call) {
 		final LogicalJoin topJoin = call.rel(0);
 		final LogicalJoin bottomJoin = call.rel(1);
-
-		final RelNode relC = topJoin.getRight();
+		
 		final RelNode relA = bottomJoin.getLeft();
 		final RelNode relB = bottomJoin.getRight();
 
@@ -54,17 +53,8 @@ public class LeftJoinToInnerJoinRule extends RelOptRule {
 
 		final int aCount = relA.getRowType().getFieldCount();
 		final int bCount = relB.getRowType().getFieldCount();
-		final int cCount = relC.getRowType().getFieldCount();
 		final ImmutableBitSet bBitSet =
 			ImmutableBitSet.range(aCount, aCount + bCount);
-
-		// becomes
-		//
-		//        newTopJoin
-		//        /        \
-		//   newBottomJoin  B
-		//    /    \
-		//   A      C
 
 		final List<RexNode> intersecting = new ArrayList<>();
 		final List<RexNode> nonIntersecting = new ArrayList<>();
