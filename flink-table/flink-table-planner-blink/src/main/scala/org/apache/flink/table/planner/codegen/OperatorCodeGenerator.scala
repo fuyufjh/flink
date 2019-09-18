@@ -58,13 +58,25 @@ object OperatorCodeGenerator extends Logging {
     val inputTypeTerm = boxedTypeTermForType(inputType)
 
     val (endInput, endInputImpl) = endInputCode match {
-      case None => ("", "")
+      case None => {
+        if (ctx.reuseEndInputCode().isEmpty) {
+          ("", "")
+        } else {
+          (s"""
+              |@Override
+              |public void endInput() throws Exception {
+              |  ${ctx.reuseEndInputCode()}
+              |}
+           """.stripMargin, s", ${className[BoundedOneInput]}")
+        }
+      }
       case Some(code) =>
         (s"""
            |@Override
            |public void endInput() throws Exception {
            |  ${ctx.reuseLocalVariableCode()}
            |  $code
+           |  ${ctx.reuseEndInputCode()}
            |}
          """.stripMargin, s", ${className[BoundedOneInput]}")
     }
