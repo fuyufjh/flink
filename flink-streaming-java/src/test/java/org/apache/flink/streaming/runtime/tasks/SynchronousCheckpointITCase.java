@@ -50,6 +50,7 @@ import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
 import org.apache.flink.runtime.metrics.groups.UnregisteredMetricGroups;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.state.CheckpointStorageLocationReference;
@@ -243,6 +244,7 @@ public class SynchronousCheckpointITCase {
 				shuffleEnvironment,
 				new KvStateService(new KvStateRegistry(), null, null),
 				mock(BroadcastVariableManager.class),
+				mock(AccumulatorAggregationManager.class),
 				new TaskEventDispatcher(),
 				new TestTaskStateManager(),
 				mock(TaskManagerActions.class),

@@ -62,6 +62,7 @@ import org.apache.flink.runtime.jobgraph.tasks.AbstractInvokable;
 import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationManager;
 import org.apache.flink.runtime.query.TaskKvStateRegistry;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.shuffle.ShuffleIOOwnerContext;
@@ -294,6 +295,7 @@ public class Task implements Runnable, TaskActions, PartitionProducerStateProvid
 		ShuffleEnvironment<?, ?> shuffleEnvironment,
 		KvStateService kvStateService,
 		BroadcastVariableManager bcVarManager,
+		AccumulatorAggregationManager accumulatorAggregationManager,
 		TaskEventDispatcher taskEventDispatcher,
 		TaskStateManager taskStateManager,
 		TaskManagerActions taskManagerActions,
@@ -345,7 +347,7 @@ public class Task implements Runnable, TaskActions, PartitionProducerStateProvid
 		this.broadcastVariableManager = Preconditions.checkNotNull(bcVarManager);
 		this.taskEventDispatcher = Preconditions.checkNotNull(taskEventDispatcher);
 		this.taskStateManager = Preconditions.checkNotNull(taskStateManager);
-		this.accumulatorRegistry = new AccumulatorRegistry(jobId, executionId);
+		this.accumulatorRegistry = new AccumulatorRegistry(jobId, vertexId, subtaskIndex, executionId, accumulatorAggregationManager);
 
 		this.inputSplitProvider = Preconditions.checkNotNull(inputSplitProvider);
 		this.checkpointResponder = Preconditions.checkNotNull(checkpointResponder);

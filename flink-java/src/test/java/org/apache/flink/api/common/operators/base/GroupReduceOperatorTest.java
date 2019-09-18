@@ -25,6 +25,7 @@ import org.apache.flink.api.common.functions.RichGroupReduceFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.functions.util.RuntimeUDFContext;
 import org.apache.flink.api.common.operators.UnaryOperatorInformation;
+import org.apache.flink.api.common.operators.base.utils.TestAccumulatorRegistry;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -177,7 +178,7 @@ public class GroupReduceOperatorTest implements java.io.Serializable {
 			List<Tuple2<String, Integer>> resultMutableSafe = op.executeOnCollections(input,
 					new RuntimeUDFContext(taskInfo, null, executionConfig,
 							new HashMap<>(),
-							new HashMap<>(),
+							new TestAccumulatorRegistry(),
 							new UnregisteredMetricsGroup()),
 					executionConfig);
 
@@ -185,7 +186,7 @@ public class GroupReduceOperatorTest implements java.io.Serializable {
 			List<Tuple2<String, Integer>> resultRegular = op.executeOnCollections(input,
 					new RuntimeUDFContext(taskInfo, null, executionConfig,
 							new HashMap<>(),
-							new HashMap<>(),
+							new TestAccumulatorRegistry(),
 							new UnregisteredMetricsGroup()),
 					executionConfig);
 

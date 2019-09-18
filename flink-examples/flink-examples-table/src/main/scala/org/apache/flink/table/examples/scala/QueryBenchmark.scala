@@ -76,7 +76,8 @@ object QueryBenchmark {
                      dumpFileOfOptimizedPlan: String = "",
                      operatorMetricCollect: Boolean = false,
                      dumpFileOfPlanWithMetrics: String = "",
-                     analyzeTable: Boolean = false)
+                     analyzeTable: Boolean = false,
+                     explain: Boolean = false)
 
   var tableStatsMap: Map[String, TableStats] = Map()
   var analyzed: Boolean = false
@@ -134,6 +135,9 @@ object QueryBenchmark {
       opt[Boolean]("analyzeTable")
         .text(s"Whether to analyze table, default: ${defaultParams.analyzeTable}")
         .action((x, c) => c.copy(analyzeTable = x))
+      opt[Boolean]("explain")
+        .text(s"run explain instead of run query, default: ${defaultParams.explain}")
+        .action((x, c) => c.copy(explain = x))
     }
 
     args.foreach(iterm => System.out.println(iterm))
@@ -375,7 +379,7 @@ object QueryBenchmark {
     }
 
     val queryString = Utils.fileToString(file)
-    val benchmark = new Benchmark(query, queryString, iter, tEnv)
+    val benchmark = new Benchmark(query, queryString, iter, tEnv, params.explain)
     benchmark.run(bestArray)
   }
 

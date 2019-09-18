@@ -19,6 +19,7 @@
 package org.apache.flink.runtime.jobmaster.utils;
 
 import org.apache.flink.api.common.JobID;
+import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.api.common.time.Time;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.api.java.tuple.Tuple5;
@@ -42,6 +43,7 @@ import org.apache.flink.runtime.jobmaster.message.ClassloadingProps;
 import org.apache.flink.runtime.messages.Acknowledge;
 import org.apache.flink.runtime.messages.checkpoint.DeclineCheckpoint;
 import org.apache.flink.runtime.messages.webmonitor.JobDetails;
+import org.apache.flink.runtime.preaggregatedaccumulators.CommitAccumulator;
 import org.apache.flink.runtime.query.KvStateLocation;
 import org.apache.flink.runtime.registration.RegistrationResponse;
 import org.apache.flink.runtime.resourcemanager.ResourceManagerId;
@@ -57,8 +59,10 @@ import org.apache.flink.util.function.TriFunction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -307,6 +311,16 @@ public class TestingJobMasterGateway implements JobMasterGateway {
 	@Override
 	public void notifyAllocationFailure(AllocationID allocationID, Exception cause) {
 		notifyAllocationFailureConsumer.accept(allocationID, cause);
+	}
+
+	@Override
+	public void commitPreAggregatedAccumulator(List<CommitAccumulator> commitAccumulators) {
+
+	}
+
+	@Override
+	public <V, A extends Serializable> CompletableFuture<Accumulator<V, A>> queryPreAggregatedAccumulator(String name) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

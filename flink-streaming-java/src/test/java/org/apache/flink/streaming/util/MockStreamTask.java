@@ -19,8 +19,10 @@
 package org.apache.flink.streaming.util;
 
 import org.apache.flink.api.common.ExecutionConfig;
+import org.apache.flink.api.common.accumulators.AbstractAccumulatorRegistry;
 import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.core.fs.CloseableRegistry;
+import org.apache.flink.runtime.accumulators.AccumulatorRegistry;
 import org.apache.flink.runtime.execution.Environment;
 import org.apache.flink.runtime.state.CheckpointStorageWorkerView;
 import org.apache.flink.streaming.api.graph.StreamConfig;
@@ -48,7 +50,6 @@ public class MockStreamTask extends StreamTask {
 	private final CheckpointStorageWorkerView checkpointStorage;
 	private final ProcessingTimeService processingTimeService;
 	private final BiConsumer<String, Throwable> handleAsyncException;
-	private final Map<String, Accumulator<?, ?>> accumulatorMap;
 
 	public MockStreamTask(
 		Environment environment,
@@ -61,8 +62,7 @@ public class MockStreamTask extends StreamTask {
 		StreamStatusMaintainer streamStatusMaintainer,
 		CheckpointStorageWorkerView checkpointStorage,
 		ProcessingTimeService processingTimeService,
-		BiConsumer<String, Throwable> handleAsyncException,
-		Map<String, Accumulator<?, ?>> accumulatorMap
+		BiConsumer<String, Throwable> handleAsyncException
 	) {
 		super(environment);
 		this.name = name;
@@ -75,7 +75,6 @@ public class MockStreamTask extends StreamTask {
 		this.checkpointStorage = checkpointStorage;
 		this.processingTimeService = processingTimeService;
 		this.handleAsyncException = handleAsyncException;
-		this.accumulatorMap = accumulatorMap;
 	}
 
 	@Override
@@ -149,7 +148,7 @@ public class MockStreamTask extends StreamTask {
 	}
 
 	@Override
-	public Map<String, Accumulator<?, ?>> getAccumulatorMap() {
-		return accumulatorMap;
+	public AccumulatorRegistry getAccumulatorRegistry() {
+		return getEnvironment().getAccumulatorRegistry();
 	}
 }

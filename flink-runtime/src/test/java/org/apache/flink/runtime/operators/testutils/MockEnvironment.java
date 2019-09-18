@@ -41,6 +41,7 @@ import org.apache.flink.runtime.jobgraph.JobVertexID;
 import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
+import org.apache.flink.runtime.preaggregatedaccumulators.EmptyOperationAccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.query.TaskKvStateRegistry;
 import org.apache.flink.runtime.state.TaskStateManager;
@@ -152,7 +153,8 @@ public class MockEnvironment implements Environment, AutoCloseable {
 		this.inputSplitProvider = inputSplitProvider;
 		this.bufferSize = bufferSize;
 
-		this.accumulatorRegistry = new AccumulatorRegistry(jobID, getExecutionId());
+		this.accumulatorRegistry = new AccumulatorRegistry(jobID, jobVertexID, subtaskIndex, getExecutionId(),
+			new EmptyOperationAccumulatorAggregationManager());
 
 		KvStateRegistry registry = new KvStateRegistry();
 		this.kvStateRegistry = registry.createTaskRegistry(jobID, getJobVertexId());

@@ -19,10 +19,12 @@
 package org.apache.flink.table.planner.codegen
 
 import org.apache.flink.table.dataformat.BaseRow
+import org.apache.flink.table.dataformat.util.BinaryRowUtil
 import org.apache.flink.table.planner.codegen.CodeGenUtils.{BASE_ROW, hashCodeForType, newName}
 import org.apache.flink.table.planner.codegen.Indenter.toISC
 import org.apache.flink.table.runtime.generated.{GeneratedHashFunction, HashFunction}
 import org.apache.flink.table.types.logical.LogicalType
+import org.apache.flink.table.types.logical.LogicalTypeRoot._
 import org.apache.flink.util.MathUtils
 
 /**
@@ -102,5 +104,29 @@ object HashCodeGenerator {
     (s"""
         |int $hashIntTerm = 0;
         |$hashBodyCode""".stripMargin, hashIntTerm)
+  }
+
+  def hashExpr(expr: GeneratedExpression): String = {
+    val binaryUtil = classOf[BinaryRowUtil].getCanonicalName
+    s"$binaryUtil.hash${hashNameInBinaryUtil(expr.resultType)}(${expr.resultTerm})"
+  }
+
+  def hashNameInBinaryUtil(t: LogicalType): String = t.getTypeRoot match {
+    case INTEGER => "Int"
+    case BIGINT => "Long"
+    case SMALLINT => "Short"
+    case TINYINT => "Byte"
+    case FLOAT => "Float"
+    case DOUBLE => "Double"
+    case BOOLEAN => "Boolean"
+    case VARCHAR | CHAR => "String"
+    case DECIMAL => "Decimal"
+    case DATE => "Int"
+    case TIME_WITHOUT_TIME_ZONE => "Int"
+    case TIMESTAMP_WITHOUT_TIME_ZONE => "Long"
+    case INTERVAL_YEAR_MONTH => "Int"
+    case INTERVAL_DAY_TIME => "Long"
+    case ARRAY => throw new IllegalArgumentException(s"Not support type to hash: $t")
+    case _ => "Object"
   }
 }

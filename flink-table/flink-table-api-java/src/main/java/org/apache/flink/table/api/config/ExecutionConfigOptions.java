@@ -162,6 +162,11 @@ public class ExecutionConfigOptions {
 			.withDescription("Runtime filter for hash join. The Build side of HashJoin will " +
 				"build a bloomFilter in advance to filter the data on the probe side.");
 
+	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_BROADCAST_JOIN_ENABLED =
+		key("sql.exec.runtime-filter.broadcast-join.enabled")
+			.defaultValue(false)
+			.withDescription("Enable runtime filter for Broadcast Hash-Join");
+
 	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_WAIT =
 		key("sql.exec.runtime-filter.wait")
 			.defaultValue(false)

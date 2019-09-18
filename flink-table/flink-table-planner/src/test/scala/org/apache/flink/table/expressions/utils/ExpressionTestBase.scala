@@ -18,8 +18,8 @@
 
 package org.apache.flink.table.expressions.utils
 
-import java.util
-import java.util.concurrent.Future
+import java.{io, util}
+import java.util.concurrent.{CompletableFuture, Future}
 
 import org.apache.calcite.plan.hep.{HepMatchOrder, HepPlanner, HepProgramBuilder}
 import org.apache.calcite.rel.RelNode
@@ -27,7 +27,7 @@ import org.apache.calcite.rex.RexNode
 import org.apache.calcite.sql.`type`.SqlTypeName._
 import org.apache.calcite.tools.Programs
 import org.apache.flink.api.common.TaskInfo
-import org.apache.flink.api.common.accumulators.Accumulator
+import org.apache.flink.api.common.accumulators.{AbstractAccumulatorRegistry, Accumulator}
 import org.apache.flink.api.common.functions._
 import org.apache.flink.api.common.functions.util.RuntimeUDFContext
 import org.apache.flink.api.common.typeinfo.BasicTypeInfo._
@@ -146,12 +146,24 @@ abstract class ExpressionTestBase {
     // call setRuntimeContext method and open method for RichFunction
     if (isRichFunction) {
       val richMapper = mapper.asInstanceOf[RichMapFunction[_, _]]
+      val testRegistry = new AbstractAccumulatorRegistry {
+        override def queryPreAggregatedAccumulator[V, A <: io.Serializable](name: String) =
+          new CompletableFuture[Accumulator[V, A]]
+
+        override def addPreAggregatedAccumulator[V, A <: io.Serializable](name: String,
+                                                                          accumulator: Accumulator[V, A]): Unit = ???
+
+        override def getPreAggregatedAccumulators:
+        util.Map[String, Accumulator[_, _ <: io.Serializable]] = ???
+
+        override def commitPreAggregatedAccumulator(name: String): Unit = ???
+      }
       val t = new RuntimeUDFContext(
         new TaskInfo("ExpressionTest", 1, 0, 1, 1),
         null,
         context._3.getConfig,
         new util.HashMap[String, Future[Path]](),
-        new util.HashMap[String, Accumulator[_, _]](),
+        testRegistry,
         null)
       richMapper.setRuntimeContext(t)
       richMapper.open(new Configuration())

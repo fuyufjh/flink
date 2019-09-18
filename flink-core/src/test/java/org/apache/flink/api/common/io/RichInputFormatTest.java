@@ -23,6 +23,7 @@ import java.util.concurrent.Future;
 
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.TaskInfo;
+import org.apache.flink.api.common.accumulators.AbstractAccumulatorRegistry;
 import org.apache.flink.api.common.accumulators.Accumulator;
 import org.apache.flink.api.common.functions.util.RuntimeUDFContext;
 import org.apache.flink.core.fs.Path;
@@ -32,6 +33,7 @@ import org.apache.flink.types.Value;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
  * Tests runtime context access from inside an RichInputFormat class
@@ -46,7 +48,7 @@ public class RichInputFormatTest {
 				new RuntimeUDFContext(
 						taskInfo, getClass().getClassLoader(), new ExecutionConfig(),
 						new HashMap<String, Future<Path>>(),
-						new HashMap<String, Accumulator<?, ?>>(),
+						mock(AbstractAccumulatorRegistry.class),
 						new UnregisteredMetricsGroup()));
 
 		assertEquals(inputFormat.getRuntimeContext().getIndexOfThisSubtask(), 1);

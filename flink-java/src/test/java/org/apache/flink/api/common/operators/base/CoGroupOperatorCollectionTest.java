@@ -26,6 +26,7 @@ import org.apache.flink.api.common.functions.RichCoGroupFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.functions.util.RuntimeUDFContext;
 import org.apache.flink.api.common.operators.BinaryOperatorInformation;
+import org.apache.flink.api.common.operators.base.utils.TestAccumulatorRegistry;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -79,11 +80,10 @@ public class CoGroupOperatorCollectionTest implements Serializable {
 			);
 
 			ExecutionConfig executionConfig = new ExecutionConfig();
-			final HashMap<String, Accumulator<?, ?>> accumulators = new HashMap<String, Accumulator<?, ?>>();
 			final HashMap<String, Future<Path>> cpTasks = new HashMap<>();
 			final TaskInfo taskInfo = new TaskInfo("Test UDF", 4, 0, 4, 0);
 			final RuntimeContext ctx = new RuntimeUDFContext(
-					taskInfo, null, executionConfig, cpTasks, accumulators, new UnregisteredMetricsGroup());
+					taskInfo, null, executionConfig, cpTasks, new TestAccumulatorRegistry(), new UnregisteredMetricsGroup());
 
 			{
 				SumCoGroup udf1 = new SumCoGroup();

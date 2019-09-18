@@ -25,13 +25,15 @@ public class Benchmark {
 	private final String sqlQuery;
 	private final int numIters;
 	private final TableEnvironment tEnv;
+	private final boolean explain;
 
-	public Benchmark(String name, String sqlQuery, int numIters, TableEnvironment tEnv) {
+	public Benchmark(String name, String sqlQuery, int numIters, TableEnvironment tEnv, boolean explain) {
 		this.name = name;
 		this.sqlQuery = sqlQuery;
 		this.numIters = numIters;
 		Preconditions.checkArgument(numIters > 0);
 		this.tEnv = tEnv;
+		this.explain = explain;
 	}
 
 	public void run(List<Tuple2<String, Long>> bestArray) throws Exception {
@@ -56,9 +58,14 @@ public class Benchmark {
 
 		Table table = tEnv.sqlQuery(sqlQuery);
 
+		if (explain) {
+			String explain = tEnv.explain(table, true);
+			System.out.println("EXPLAIN OUTPUT:\n" + explain);
+		}
+
 		LOG.info(" begin execute.");
 
-		List<Row> res = CollectResultUtil.collect(table, name);
+		List<Row> res = CollectResultUtil.collect(table,name);
 
 		LOG.info(" end execute");
 
@@ -106,7 +113,7 @@ public class Benchmark {
 		long max = Long.MIN_VALUE;
 		Method method = Result.class.getMethod(methodName);
 		for (Result result : results) {
-			long time = (long) method.invoke(result);
+			long time = (long)method.invoke(result);
 			if (time < best) {
 				best = time;
 			}
@@ -118,7 +125,7 @@ public class Benchmark {
 		return new Tuple3<>(best, sum / results.size(), max);
 	}
 
-	private void printRow(List<Row> rowList) {
+	private void printRow(List<Row> rowList){
 		for (Row row : rowList) {
 			System.out.println(row);
 		}

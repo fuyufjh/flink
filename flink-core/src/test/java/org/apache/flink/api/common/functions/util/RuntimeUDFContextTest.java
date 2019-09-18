@@ -20,6 +20,7 @@ package org.apache.flink.api.common.functions.util;
 
 import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.TaskInfo;
+import org.apache.flink.api.common.accumulators.AbstractAccumulatorRegistry;
 import org.apache.flink.api.common.functions.BroadcastVariableInitializer;
 import org.apache.flink.metrics.groups.UnregisteredMetricsGroup;
 
@@ -34,6 +35,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.powermock.api.mockito.PowerMockito.mock;
 
 /**
  * Test for the {@link RuntimeUDFContext}.
@@ -48,7 +50,7 @@ public class RuntimeUDFContextTest {
 			RuntimeUDFContext ctx = new RuntimeUDFContext(
 					taskInfo, getClass().getClassLoader(), new ExecutionConfig(),
 					new HashMap<>(),
-					new HashMap<>(),
+				    mock(AbstractAccumulatorRegistry.class),
 					new UnregisteredMetricsGroup());
 
 			assertFalse(ctx.hasBroadcastVariable("some name"));
@@ -86,7 +88,7 @@ public class RuntimeUDFContextTest {
 			RuntimeUDFContext ctx = new RuntimeUDFContext(
 					taskInfo, getClass().getClassLoader(), new ExecutionConfig(),
 					new HashMap<>(),
-					new HashMap<>(),
+				    mock(AbstractAccumulatorRegistry.class),
 					new UnregisteredMetricsGroup());
 
 			ctx.setBroadcastVariable("name1", Arrays.asList(1, 2, 3, 4));
@@ -127,7 +129,7 @@ public class RuntimeUDFContextTest {
 			RuntimeUDFContext ctx = new RuntimeUDFContext(
 					taskInfo, getClass().getClassLoader(), new ExecutionConfig(),
 					new HashMap<>(),
-					new HashMap<>(),
+				    mock(AbstractAccumulatorRegistry.class),
 					new UnregisteredMetricsGroup());
 
 			ctx.setBroadcastVariable("name", Arrays.asList(1, 2, 3, 4));
@@ -156,7 +158,7 @@ public class RuntimeUDFContextTest {
 			RuntimeUDFContext ctx = new RuntimeUDFContext(
 					taskInfo, getClass().getClassLoader(), new ExecutionConfig(),
 					new HashMap<>(),
-					new HashMap<>(),
+			    	mock(AbstractAccumulatorRegistry.class),
 					new UnregisteredMetricsGroup());
 
 			ctx.setBroadcastVariable("name", Arrays.asList(1, 2, 3, 4));
@@ -183,7 +185,7 @@ public class RuntimeUDFContextTest {
 			RuntimeUDFContext ctx = new RuntimeUDFContext(
 					taskInfo, getClass().getClassLoader(), new ExecutionConfig(),
 					new HashMap<>(),
-					new HashMap<>(),
+		    		mock(AbstractAccumulatorRegistry.class),
 					new UnregisteredMetricsGroup());
 
 			ctx.setBroadcastVariable("name", Arrays.asList(1, 2, 3, 4));

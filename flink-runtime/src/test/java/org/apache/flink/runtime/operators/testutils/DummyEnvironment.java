@@ -38,6 +38,7 @@ import org.apache.flink.runtime.jobgraph.tasks.InputSplitProvider;
 import org.apache.flink.runtime.memory.MemoryManager;
 import org.apache.flink.runtime.metrics.groups.TaskMetricGroup;
 import org.apache.flink.runtime.metrics.groups.UnregisteredMetricGroups;
+import org.apache.flink.runtime.preaggregatedaccumulators.EmptyOperationAccumulatorAggregationManager;
 import org.apache.flink.runtime.query.KvStateRegistry;
 import org.apache.flink.runtime.query.TaskKvStateRegistry;
 import org.apache.flink.runtime.state.TaskStateManager;
@@ -61,7 +62,7 @@ public class DummyEnvironment implements Environment {
 	private KvStateRegistry kvStateRegistry = new KvStateRegistry();
 	private TaskStateManager taskStateManager;
 	private final GlobalAggregateManager aggregateManager;
-	private final AccumulatorRegistry accumulatorRegistry = new AccumulatorRegistry(jobId, executionId);
+	private final AccumulatorRegistry accumulatorRegistry = new AccumulatorRegistry(jobId, jobVertexId, 0, executionId, new EmptyOperationAccumulatorAggregationManager());
 	private ClassLoader userClassLoader;
 
 	public DummyEnvironment() {

@@ -43,6 +43,7 @@ import org.apache.flink.runtime.filecache.FileCache;
 import org.apache.flink.runtime.io.disk.iomanager.IOManager;
 import org.apache.flink.runtime.io.disk.iomanager.IOManagerAsync;
 import org.apache.flink.runtime.io.network.NettyShuffleEnvironmentBuilder;
+import org.apache.flink.runtime.preaggregatedaccumulators.EmptyOperationAccumulatorAggregationManager;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.taskexecutor.NoOpPartitionProducerStateChecker;
@@ -205,6 +206,7 @@ public class JvmExitOnFatalErrorTest {
 						shuffleEnvironment,
 						new KvStateService(new KvStateRegistry(), null, null),
 						new BroadcastVariableManager(),
+						new EmptyOperationAccumulatorAggregationManager(),
 						new TaskEventDispatcher(),
 						slotStateManager,
 						new NoOpTaskManagerActions(),

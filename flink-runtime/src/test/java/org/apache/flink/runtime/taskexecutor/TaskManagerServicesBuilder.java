@@ -21,6 +21,7 @@ package org.apache.flink.runtime.taskexecutor;
 import org.apache.flink.core.memory.MemoryType;
 import org.apache.flink.runtime.broadcast.BroadcastVariableManager;
 import org.apache.flink.runtime.io.disk.iomanager.IOManager;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationManager;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.memory.MemoryManager;
@@ -45,6 +46,7 @@ public class TaskManagerServicesBuilder {
 	private ShuffleEnvironment<?, ?> shuffleEnvironment;
 	private KvStateService kvStateService;
 	private BroadcastVariableManager broadcastVariableManager;
+	private AccumulatorAggregationManager accumulatorAggregationManager;
 	private TaskSlotTable taskSlotTable;
 	private JobManagerTable jobManagerTable;
 	private JobLeaderService jobLeaderService;
@@ -63,6 +65,7 @@ public class TaskManagerServicesBuilder {
 		shuffleEnvironment = mock(ShuffleEnvironment.class);
 		kvStateService = new KvStateService(new KvStateRegistry(), null, null);
 		broadcastVariableManager = new BroadcastVariableManager();
+		accumulatorAggregationManager = mock(AccumulatorAggregationManager.class);
 		taskEventDispatcher = new TaskEventDispatcher();
 		taskSlotTable = mock(TaskSlotTable.class);
 		jobManagerTable = new JobManagerTable();
@@ -128,6 +131,7 @@ public class TaskManagerServicesBuilder {
 			shuffleEnvironment,
 			kvStateService,
 			broadcastVariableManager,
+			accumulatorAggregationManager,
 			taskSlotTable,
 			jobManagerTable,
 			jobLeaderService,

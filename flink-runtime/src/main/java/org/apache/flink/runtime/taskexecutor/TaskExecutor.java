@@ -569,6 +569,7 @@ public class TaskExecutor extends RpcEndpoint implements TaskExecutorGateway {
 				taskExecutorServices.getShuffleEnvironment(),
 				taskExecutorServices.getKvStateService(),
 				taskExecutorServices.getBroadcastVariableManager(),
+				taskExecutorServices.getAccumulatorAggregationManager(),
 				taskExecutorServices.getTaskEventDispatcher(),
 				taskStateManager,
 				taskManagerActions,

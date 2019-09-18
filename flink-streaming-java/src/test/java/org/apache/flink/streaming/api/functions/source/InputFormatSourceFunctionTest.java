@@ -267,9 +267,7 @@ public class InputFormatSourceFunctionTest {
 		private InputSplit[] inputSplits;
 
 		private MockRuntimeContext(LifeCycleTestInputFormat format, int noOfSplits, Environment environment) {
-			super(new MockStreamOperator(),
-				environment,
-				Collections.<String, Accumulator<?, ?>>emptyMap());
+			super(new MockStreamOperator(), environment);
 
 			this.noOfSplits = noOfSplits;
 			this.format = format;

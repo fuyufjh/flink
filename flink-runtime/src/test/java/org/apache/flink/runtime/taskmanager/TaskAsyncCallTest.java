@@ -41,6 +41,7 @@ import org.apache.flink.runtime.executiongraph.TaskInformation;
 import org.apache.flink.runtime.filecache.FileCache;
 import org.apache.flink.runtime.io.disk.iomanager.IOManager;
 import org.apache.flink.runtime.io.network.NettyShuffleEnvironmentBuilder;
+import org.apache.flink.runtime.preaggregatedaccumulators.RPCBasedAccumulatorAggregationManager;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.taskexecutor.PartitionProducerStateChecker;
@@ -249,6 +250,7 @@ public class TaskAsyncCallTest extends TestLogger {
 			shuffleEnvironment,
 			new KvStateService(new KvStateRegistry(), null, null),
 			mock(BroadcastVariableManager.class),
+			mock(RPCBasedAccumulatorAggregationManager.class),
 			new TaskEventDispatcher(),
 			new TestTaskStateManager(),
 			mock(TaskManagerActions.class),

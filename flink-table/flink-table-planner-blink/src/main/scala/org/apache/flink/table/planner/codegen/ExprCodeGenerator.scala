@@ -37,10 +37,10 @@ import org.apache.flink.table.runtime.typeutils.TypeCheckUtils
 import org.apache.flink.table.runtime.typeutils.TypeCheckUtils.{isNumeric, isTemporal, isTimeInterval}
 import org.apache.flink.table.types.logical._
 import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo
-
 import org.apache.calcite.rex._
 import org.apache.calcite.sql.SqlOperator
 import org.apache.calcite.sql.`type`.{ReturnTypes, SqlTypeName}
+import org.apache.flink.table.functions.sql.internal.{SqlRuntimeFilterBuilderFunction, SqlRuntimeFilterFunction}
 
 import scala.collection.JavaConversions._
 
@@ -706,6 +706,11 @@ class ExprCodeGenerator(ctx: CodeGeneratorContext, nullableInput: Boolean)
 
       case DOT =>
         generateDot(ctx, operands)
+
+      case func: SqlRuntimeFilterFunction => generateRuntimeFilter(ctx, operands, func)
+
+      case func: SqlRuntimeFilterBuilderFunction =>
+        generateRuntimeFilterBuilder(ctx, operands, func)
 
       case PROCTIME =>
         // attribute is proctime indicator.

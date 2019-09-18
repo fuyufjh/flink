@@ -32,6 +32,8 @@ import org.apache.flink.runtime.io.disk.iomanager.IOManager;
 import org.apache.flink.runtime.io.disk.iomanager.IOManagerAsync;
 import org.apache.flink.runtime.io.network.TaskEventDispatcher;
 import org.apache.flink.runtime.memory.MemoryManager;
+import org.apache.flink.runtime.preaggregatedaccumulators.AccumulatorAggregationManager;
+import org.apache.flink.runtime.preaggregatedaccumulators.RPCBasedAccumulatorAggregationManager;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironment;
 import org.apache.flink.runtime.shuffle.ShuffleEnvironmentContext;
 import org.apache.flink.runtime.shuffle.ShuffleServiceLoader;
@@ -75,6 +77,7 @@ public class TaskManagerServices {
 	private final ShuffleEnvironment<?, ?> shuffleEnvironment;
 	private final KvStateService kvStateService;
 	private final BroadcastVariableManager broadcastVariableManager;
+	private final AccumulatorAggregationManager accumulatorAggregationManager;
 	private final TaskSlotTable taskSlotTable;
 	private final JobManagerTable jobManagerTable;
 	private final JobLeaderService jobLeaderService;
@@ -88,6 +91,7 @@ public class TaskManagerServices {
 		ShuffleEnvironment<?, ?> shuffleEnvironment,
 		KvStateService kvStateService,
 		BroadcastVariableManager broadcastVariableManager,
+		AccumulatorAggregationManager accumulatorAggregationManager,
 		TaskSlotTable taskSlotTable,
 		JobManagerTable jobManagerTable,
 		JobLeaderService jobLeaderService,
@@ -105,6 +109,7 @@ public class TaskManagerServices {
 		this.jobLeaderService = Preconditions.checkNotNull(jobLeaderService);
 		this.taskManagerStateStore = Preconditions.checkNotNull(taskManagerStateStore);
 		this.taskEventDispatcher = Preconditions.checkNotNull(taskEventDispatcher);
+		this.accumulatorAggregationManager = Preconditions.checkNotNull(accumulatorAggregationManager);
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -153,6 +158,10 @@ public class TaskManagerServices {
 
 	public TaskEventDispatcher getTaskEventDispatcher() {
 		return taskEventDispatcher;
+	}
+
+	public AccumulatorAggregationManager getAccumulatorAggregationManager() {
+		return accumulatorAggregationManager;
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -288,6 +297,8 @@ public class TaskManagerServices {
 			stateRootDirectoryFiles,
 			taskIOExecutor);
 
+		final AccumulatorAggregationManager accumulatorAggregationManager = new RPCBasedAccumulatorAggregationManager(jobManagerTable);
+
 		return new TaskManagerServices(
 			taskManagerLocation,
 			memoryManager,
@@ -295,6 +306,7 @@ public class TaskManagerServices {
 			shuffleEnvironment,
 			kvStateService,
 			broadcastVariableManager,
+			accumulatorAggregationManager,
 			taskSlotTable,
 			jobManagerTable,
 			jobLeaderService,
