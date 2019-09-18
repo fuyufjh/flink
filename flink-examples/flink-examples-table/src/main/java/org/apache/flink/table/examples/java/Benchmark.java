@@ -61,22 +61,24 @@ public class Benchmark {
 		if (explain) {
 			String explain = tEnv.explain(table, true);
 			System.out.println("EXPLAIN OUTPUT:\n" + explain);
+			return new Result(0);
+		} else {
+
+			LOG.info(" begin execute.");
+
+			List<Row> res = CollectResultUtil.collect(table, name);
+
+			LOG.info(" end execute");
+
+			System.out.println();
+
+			long totalTime = System.currentTimeMillis() - startTime;
+			System.out.println("total execute " + totalTime + "ms.");
+
+			printRow(res);
+
+			return new Result(totalTime);
 		}
-
-		LOG.info(" begin execute.");
-
-		List<Row> res = CollectResultUtil.collect(table,name);
-
-		LOG.info(" end execute");
-
-		System.out.println();
-
-		long totalTime = System.currentTimeMillis() - startTime;
-		System.out.println("total execute " + totalTime + "ms.");
-
-		printRow(res);
-
-		return new Result(totalTime);
 	}
 
 	private void printResults(List<Result> results, List<Tuple2<String, Long>> bestArray) throws Exception {
