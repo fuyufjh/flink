@@ -467,6 +467,7 @@ object PredefinedStatistics {
     "web_suite_number" -> new ColumnStats(19L, 0L, 8.25D, 9, null, null),
     "web_rec_end_date" -> new ColumnStats(3L, 12L, 12.0D, 12, null, null),
     "web_close_date_sk" -> new ColumnStats(8L, 4L, 8.0D, 8, convertToNumber("2447131",DataTypes.BIGINT), convertToNumber("2443328",DataTypes.BIGINT)),
+    "web_company_name" -> new ColumnStats(5L, 0L, 3.75D, 5, null, null),
     "web_manager" -> new ColumnStats(16L, 0L, 11.958333333333334D, 17, null, null),
     "web_mkt_class" -> new ColumnStats(18L, 0L, 37.208333333333336D, 49, null, null),
     "web_mkt_id" -> new ColumnStats(6L, 0L, 8.0D, 8, convertToNumber("6",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
