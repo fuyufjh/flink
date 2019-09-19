@@ -1,4 +1,4 @@
-mvn install -pl "!flink-runtime-web" -T8 -DskipTests -Dcheckstyle.skip -Drat.skip=true
+mvn install -pl "!flink-runtime-web" -T8 -DskipTests -Dcheckstyle.skip -Dscalastyle.skip -Drat.skip=true
 
 # archive and copy to my downloads folder
 pushd flink-dist/target/flink-1.9-tpcds-master-bin/

@@ -158,7 +158,7 @@ public class ExecutionConfigOptions {
 
 	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_ENABLED =
 		key("sql.exec.runtime-filter.enabled")
-			.defaultValue(false)
+			.defaultValue(true)
 			.withDescription("Runtime filter for hash join. The Build side of HashJoin will " +
 				"build a bloomFilter in advance to filter the data on the probe side.");
 
