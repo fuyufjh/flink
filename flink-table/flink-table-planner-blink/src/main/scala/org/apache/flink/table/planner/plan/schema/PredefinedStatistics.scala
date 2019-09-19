@@ -283,7 +283,7 @@ object PredefinedStatistics {
   val DATE_DIM_100 = new TableStats(73049L, Map[String, ColumnStats](
     "d_same_day_lq" -> new ColumnStats(72475L, 0L, 8.0D, 8, convertToNumber("2487978",DataTypes.BIGINT), convertToNumber("2414930",DataTypes.BIGINT)),
     "d_holiday" -> new ColumnStats(2L, 0L, 1.0D, 1, null, null),
-    "d_date" -> new ColumnStats(73063L, 0L, 12.0D, 12, null, null),
+    "d_date" -> new ColumnStats(73063L, 0L, 12.0D, 12, 47482, -25566),
     "d_current_week" -> new ColumnStats(1L, 0L, 1.0D, 1, null, null),
     "d_current_day" -> new ColumnStats(1L, 0L, 1.0D, 1, null, null),
     "d_week_seq" -> new ColumnStats(10393L, 0L, 8.0D, 8, convertToNumber("10436",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
