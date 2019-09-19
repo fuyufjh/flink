@@ -95,6 +95,6 @@ public class OptimizerConfigOptions {
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH_STREAMING)
 	public static final ConfigOption<Boolean> TABLE_OPTIMIZER_JOIN_REORDER_ENABLED =
 		key("table.optimizer.join-reorder-enabled")
-			.defaultValue(false)
+			.defaultValue(true)
 			.withDescription("Enables join reorder in optimizer. Default is disabled.");
 }

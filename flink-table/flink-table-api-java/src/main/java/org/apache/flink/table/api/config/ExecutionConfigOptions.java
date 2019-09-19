@@ -109,19 +109,19 @@ public class ExecutionConfigOptions {
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_HASH_AGG_MEMORY =
 		key("table.exec.resource.hash-agg.memory")
-			.defaultValue("128 mb")
+			.defaultValue("256 mb")
 			.withDescription("Sets the managed memory size of hash aggregate operator.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_HASH_JOIN_MEMORY =
 		key("table.exec.resource.hash-join.memory")
-			.defaultValue("128 mb")
+			.defaultValue("256 mb")
 			.withDescription("Sets the managed memory for hash join operator. It defines the lower limit.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_SORT_MEMORY =
 		key("table.exec.resource.sort.memory")
-			.defaultValue("128 mb")
+			.defaultValue("256 mb")
 			.withDescription("Sets the managed buffer memory size for sort operator.");
 
 	// ------------------------------------------------------------------------
