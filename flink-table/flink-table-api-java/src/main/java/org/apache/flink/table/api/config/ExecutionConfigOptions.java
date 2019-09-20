@@ -164,7 +164,7 @@ public class ExecutionConfigOptions {
 
 	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_BROADCAST_JOIN_ENABLED =
 		key("sql.exec.runtime-filter.broadcast-join.enabled")
-			.defaultValue(false)
+			.defaultValue(true)
 			.withDescription("Enable runtime filter for Broadcast Hash-Join");
 
 	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_WAIT =
