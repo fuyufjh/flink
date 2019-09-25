@@ -83,8 +83,8 @@ class BatchExecNestedLoopJoin(
   }
 
   override def computeSelfCost(planner: RelOptPlanner, mq: RelMetadataQuery): RelOptCost = {
-    val leftRowCnt = mq.getRowCount(getLeft)
-    val rightRowCnt = mq.getRowCount(getRight)
+    val leftRowCnt = mq.getRowCount(getLeft) + 10
+    val rightRowCnt = mq.getRowCount(getRight) + 10
     if (leftRowCnt == null || rightRowCnt == null) {
       return null
     }
