@@ -136,6 +136,12 @@ object FlinkBatchProgram {
             .setHepMatchOrder(HepMatchOrder.BOTTOM_UP)
             .add(FlinkBatchRuleSets.PRUNE_EMPTY_RULES)
             .build(), "prune empty after predicate push down")
+        .addProgram(
+          FlinkHepRuleSetProgramBuilder.newBuilder
+            .setHepRulesExecutionType(HEP_RULES_EXECUTION_TYPE.RULE_SEQUENCE)
+            .setHepMatchOrder(HepMatchOrder.BOTTOM_UP)
+            .add(RuleSets.ofList(LeftJoinToInnerJoinRule.INNER_LEFT_INSTANCE))
+            .build(), "left join to inner join")
         .build())
 
     // join reorder
@@ -163,7 +169,6 @@ object FlinkBatchProgram {
         .setHepRulesExecutionType(HEP_RULES_EXECUTION_TYPE.RULE_COLLECTION)
         .setHepMatchOrder(HepMatchOrder.BOTTOM_UP)
         .add(FlinkBatchRuleSets.JOIN_COND_EQUAL_TRANSFER_RULES)
-        .add(RuleSets.ofList(LeftJoinToInnerJoinRule.INNER_LEFT_INSTANCE))
         .build())
 
     // window rewrite

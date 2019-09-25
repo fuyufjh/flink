@@ -370,7 +370,7 @@ object PredefinedStatistics {
   val REASON_100 = new TableStats(55L, Map[String, ColumnStats](
     "r_reason_sk" -> new ColumnStats(55L, 0L, 8.0D, 8, convertToNumber("55",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
     "r_reason_id" -> new ColumnStats(55L, 0L, 16.0D, 16, null, null),
-    "r_reason_desc" -> new ColumnStats(54L, 0L, 13.781818181818181D, 43, null, null)))
+    "r_reason_desc" -> new ColumnStats(54L, 0L, 13.781818181818181D, 43, "Wrong size", "Did not fit")))
 
   val SHIP_MODE_100 = new TableStats(20L, Map[String, ColumnStats](
     "sm_type" -> new ColumnStats(6L, 0L, 7.5D, 9, null, null),
