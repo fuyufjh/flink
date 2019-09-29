@@ -174,19 +174,19 @@ public class ExecutionConfigOptions {
 
 	public static final ConfigOption<Integer> SQL_EXEC_RUNTIME_FILTER_SIZE_MAX =
 		key("sql.exec.runtime-filter.size.max.mb")
-			.defaultValue(10)
+			.defaultValue(50)
 			.withDescription("The max size of MB to BloomFilter. A too large BloomFilter will cause " +
 				"the JobMaster bandwidth to fill up and affect scheduling.");
 
 	public static final ConfigOption<Double> SQL_EXEC_RUNTIME_FILTER_PROBE_FILTER_DEGREE_MIN =
 		key("sql.exec.runtime-filter.probe.filter-degree.min")
-			.defaultValue(0.5)
+			.defaultValue(0.2)
 			.withDescription("The minimum filtering degree of the probe side to enable runtime filter." +
 				"(1 - buildNdv / probeNdv) * (1 - minFpp) >= minProbeFilter.");
 
 	public static final ConfigOption<Long> SQL_EXEC_RUNTIME_FILTER_PROBE_ROW_COUNT_MIN =
 		key("sql.exec.runtime-filter.probe.row-count.min")
-			.defaultValue(100000000L)
+			.defaultValue(10000000L)
 			.withDescription("The minimum row count of probe side to enable runtime filter." +
 				"Probe.rowCount >= minProbeRowCount.");
 

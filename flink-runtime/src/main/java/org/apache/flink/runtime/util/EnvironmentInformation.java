@@ -286,6 +286,7 @@ public class EnvironmentInformation {
 			log.info(" JVM: " + jvmVersion);
 			log.info(" Maximum heap size: " + maxHeapMegabytes + " MiBytes");
 			log.info(" JAVA_HOME: " + (javaHome == null ? "(not set)" : javaHome));
+			log.info(" java.library.path: " + System.getProperty("java.library.path"));
 
 			String hadoopVersionString = getHadoopVersionString();
 			if (hadoopVersionString != null) {

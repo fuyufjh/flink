@@ -323,6 +323,9 @@ export FLINK_PLUGINS_DIR
 export FLINK_LIB_DIR
 # export /opt dir to access it for the SQL client
 export FLINK_OPT_DIR
+# export LD_LIBRARY_PATH
+# LD_LIBRARY_PATH=/home/hadoop/flink-1.9-tpcds-master/lib/hadoop-native-64-2.4.1
+# export LD_LIBRARY_PATH
 
 ########################################################################################################################
 # ENVIRONMENT VARIABLES
