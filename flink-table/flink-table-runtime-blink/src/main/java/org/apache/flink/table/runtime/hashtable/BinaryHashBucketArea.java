@@ -136,6 +136,8 @@ public class BinaryHashBucketArea {
 	 */
 	private static final double DEFAULT_LOAD_FACTOR = 0.75;
 
+	private static final double VERY_FAST_LOAD_FACTOR = 0.25;
+
 	final BinaryHashTable table;
 	private final double estimatedRowCount;
 	private final double loadFactor;
@@ -154,7 +156,7 @@ public class BinaryHashBucketArea {
 	private boolean inReHash = false;
 
 	BinaryHashBucketArea(BinaryHashTable table, double estimatedRowCount, int maxSegs) {
-		this(table, estimatedRowCount, maxSegs, DEFAULT_LOAD_FACTOR);
+		this(table, estimatedRowCount, maxSegs, VERY_FAST_LOAD_FACTOR);
 	}
 
 	private BinaryHashBucketArea(BinaryHashTable table, double estimatedRowCount, int maxSegs, double loadFactor) {

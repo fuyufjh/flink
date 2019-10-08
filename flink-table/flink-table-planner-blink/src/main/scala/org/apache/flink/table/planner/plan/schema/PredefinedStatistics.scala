@@ -271,12 +271,12 @@ object PredefinedStatistics {
 
   val CUSTOMER_DEMOGRAPHICS_100 = new TableStats(1920800L, Map[String, ColumnStats](
     "cd_demo_sk" -> new ColumnStats(1913326L, 0L, 8.0D, 8, convertToNumber("1920800",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
-    "cd_education_status" -> new ColumnStats(7L, 0L, 9.571428571428571D, 15, null, null),
+    "cd_education_status" -> new ColumnStats(7L, 0L, 9.571428571428571D, 15, "Unknown", "2 yr Degree"),
     "cd_credit_rating" -> new ColumnStats(4L, 0L, 7.0D, 9, null, null),
     "cd_purchase_estimate" -> new ColumnStats(20L, 0L, 8.0D, 8, convertToNumber("10000",DataTypes.BIGINT), convertToNumber("500",DataTypes.BIGINT)),
     "cd_dep_college_count" -> new ColumnStats(7L, 0L, 8.0D, 8, convertToNumber("6",DataTypes.BIGINT), convertToNumber("0",DataTypes.BIGINT)),
     "cd_dep_count" -> new ColumnStats(7L, 0L, 8.0D, 8, convertToNumber("6",DataTypes.BIGINT), convertToNumber("0",DataTypes.BIGINT)),
-    "cd_gender" -> new ColumnStats(2L, 0L, 1.0D, 1, null, null),
+    "cd_gender" -> new ColumnStats(2L, 0L, 1.0D, 1, "M", "F"),
     "cd_dep_employed_count" -> new ColumnStats(7L, 0L, 8.0D, 8, convertToNumber("6",DataTypes.BIGINT), convertToNumber("0",DataTypes.BIGINT)),
     "cd_marital_status" -> new ColumnStats(5L, 0L, 1.0D, 1, null, null)))
 
@@ -335,9 +335,9 @@ object PredefinedStatistics {
     "i_item_desc" -> new ColumnStats(148652L, 0L, 100.00748039215686D, 200, null, null),
     "i_category_id" -> new ColumnStats(10L, 536L, 8.0D, 8, convertToNumber("10",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
     "i_item_id" -> new ColumnStats(102033L, 0L, 16.0D, 16, null, null),
-    "i_class" -> new ColumnStats(99L, 0L, 7.758583333333333D, 15, null, null),
+    "i_class" -> new ColumnStats(99L, 0L, 7.758583333333333D, 15, "womens watch", "accessories"),
     "i_current_price" -> new ColumnStats(9085L, 517L, 12.0D, 12, convertToNumber("99.99",DataTypes.DECIMAL(7, 2)), convertToNumber("0.09",DataTypes.DECIMAL(7, 2))),
-    "i_category" -> new ColumnStats(11L, 0L, 5.890460784313725D, 11, null, null),
+    "i_category" -> new ColumnStats(11L, 0L, 5.890460784313725D, 11, "Women", "Books"),
     "i_brand_id" -> new ColumnStats(953L, 512L, 8.0D, 8, convertToNumber("10016017",DataTypes.BIGINT), convertToNumber("1001001",DataTypes.BIGINT)),
     "i_item_sk" -> new ColumnStats(203740L, 0L, 8.0D, 8, convertToNumber("204000",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
     "i_manufact" -> new ColumnStats(999L, 0L, 11.273299019607844D, 15, null, null),
@@ -360,7 +360,7 @@ object PredefinedStatistics {
     "p_channel_dmail" -> new ColumnStats(3L, 0L, 0.988D, 1, null, null),
     "p_channel_press" -> new ColumnStats(2L, 0L, 0.989D, 1, null, null),
     "p_end_date_sk" -> new ColumnStats(583L, 10L, 8.0D, 8, convertToNumber("2450970",DataTypes.BIGINT), convertToNumber("2450100",DataTypes.BIGINT)),
-    "p_channel_email" -> new ColumnStats(2L, 0L, 0.984D, 1, null, null),
+    "p_channel_email" -> new ColumnStats(2L, 0L, 0.984D, 1, "N", "N"),
     "p_channel_tv" -> new ColumnStats(2L, 0L, 0.983D, 1, null, null),
     "p_promo_sk" -> new ColumnStats(996L, 0L, 8.0D, 8, convertToNumber("1000",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
     "p_channel_event" -> new ColumnStats(2L, 0L, 0.986D, 1, null, null),
@@ -370,7 +370,7 @@ object PredefinedStatistics {
   val REASON_100 = new TableStats(55L, Map[String, ColumnStats](
     "r_reason_sk" -> new ColumnStats(55L, 0L, 8.0D, 8, convertToNumber("55",DataTypes.BIGINT), convertToNumber("1",DataTypes.BIGINT)),
     "r_reason_id" -> new ColumnStats(55L, 0L, 16.0D, 16, null, null),
-    "r_reason_desc" -> new ColumnStats(54L, 0L, 13.781818181818181D, 43, null, null)))
+    "r_reason_desc" -> new ColumnStats(54L, 0L, 13.781818181818181D, 43, "Wrong size", "Did not fit")))
 
   val SHIP_MODE_100 = new TableStats(20L, Map[String, ColumnStats](
     "sm_type" -> new ColumnStats(6L, 0L, 7.5D, 9, null, null),
