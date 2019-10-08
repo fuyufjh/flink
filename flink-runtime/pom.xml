@@ -319,6 +319,13 @@ under the License.
 			<artifactId>oshi-core</artifactId>
 			<optional>true</optional>
 		</dependency>
+
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>affinity</artifactId>
+			<version>3.0.6</version>
+		</dependency>
+
 	</dependencies>
 
 	<!-- Dependency Management to converge transitive dependency versions -->
