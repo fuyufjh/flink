@@ -27,7 +27,7 @@ public class AlgorithmOptions {
 
 	public static final ConfigOption<Boolean> HASH_JOIN_BLOOM_FILTERS =
 		key("taskmanager.runtime.hashjoin-bloom-filters")
-			.defaultValue(false)
+			.defaultValue(true)
 			.withDescription("Flag to activate/deactivate bloom filters in the hybrid hash join implementation." +
 				" In cases where the hash join needs to spill to disk (datasets larger than the reserved fraction of" +
 				" memory), these bloom filters can greatly reduce the number of spilled records, at the cost some" +
