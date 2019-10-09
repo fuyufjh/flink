@@ -169,7 +169,7 @@ public class ExecutionConfigOptions {
 
 	public static final ConfigOption<Boolean> SQL_EXEC_RUNTIME_FILTER_WAIT =
 		key("sql.exec.runtime-filter.wait")
-			.defaultValue(false)
+			.defaultValue(true)
 			.withDescription("Weather to let probe side to wait bloom filter.");
 
 	public static final ConfigOption<Integer> SQL_EXEC_RUNTIME_FILTER_SIZE_MAX =
