@@ -35,7 +35,7 @@ public class AlgorithmOptions {
 
 	public static final ConfigOption<Integer> SPILLING_MAX_FAN =
 		key("taskmanager.runtime.max-fan")
-			.defaultValue(128)
+			.defaultValue(512)
 			.withDescription("The maximal fan-in for external merge joins and fan-out for spilling hash tables. Limits" +
 				" the number of file handles per operator, but may cause intermediate merging/partitioning, if set too" +
 				" small.");
