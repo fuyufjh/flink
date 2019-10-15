@@ -52,20 +52,20 @@ public final class ColumnStats {
 	/**
 	 * max value of column values.
 	 */
-	private final Object max;
+	private final Number max;
 
 	/**
 	 * min value of column values.
 	 */
-	private final Object min;
+	private final Number min;
 
 	public ColumnStats(
 		Long ndv,
 		Long nullCount,
 		Double avgLen,
 		Integer maxLen,
-		Object max,
-		Object min) {
+		Number max,
+		Number min) {
 		this.ndv = ndv;
 		this.nullCount = nullCount;
 		this.avgLen = avgLen;
@@ -90,11 +90,11 @@ public final class ColumnStats {
 		return maxLen;
 	}
 
-	public Object getMaxValue() {
+	public Number getMaxValue() {
 		return max;
 	}
 
-	public Object getMinValue() {
+	public Number getMinValue() {
 		return min;
 	}
 
