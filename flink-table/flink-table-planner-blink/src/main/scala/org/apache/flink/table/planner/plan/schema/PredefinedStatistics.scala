@@ -6,7 +6,7 @@ import org.apache.flink.table.types.DataType
 import org.apache.flink.table.types.logical.LogicalTypeRoot._
 
 import scala.collection.JavaConversions._
-
+@Deprecated
 object PredefinedStatistics {
 
   val CATALOG_SALES_100 = new TableStats(144004615L, Map[String, ColumnStats](

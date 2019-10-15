@@ -113,7 +113,7 @@ public class NettyShuffleEnvironmentOptions {
 	 */
 	public static final ConfigOption<String> NETWORK_BUFFERS_MEMORY_MAX =
 		key("taskmanager.network.memory.max")
-			.defaultValue("1gb")
+			.defaultValue("10gb")
 			.withDescription("Maximum memory size for network buffers.");
 
 	/**

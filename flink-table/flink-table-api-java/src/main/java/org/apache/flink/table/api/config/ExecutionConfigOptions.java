@@ -103,25 +103,25 @@ public class ExecutionConfigOptions {
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_EXTERNAL_BUFFER_MEMORY =
 		key("table.exec.resource.external-buffer-memory")
-			.defaultValue("100 mb")
+			.defaultValue("10 mb")
 			.withDescription("Sets the external buffer memory size that is used in sort merge join and nested join and over window.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_HASH_AGG_MEMORY =
 		key("table.exec.resource.hash-agg.memory")
-			.defaultValue("2560 mb")
+			.defaultValue("128 mb")
 			.withDescription("Sets the managed memory size of hash aggregate operator.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_HASH_JOIN_MEMORY =
 		key("table.exec.resource.hash-join.memory")
-			.defaultValue("2560 mb")
+			.defaultValue("128 mb")
 			.withDescription("Sets the managed memory for hash join operator. It defines the lower limit.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_SORT_MEMORY =
 		key("table.exec.resource.sort.memory")
-			.defaultValue("2560 mb")
+			.defaultValue("128 mb")
 			.withDescription("Sets the managed buffer memory size for sort operator.");
 
 	// ------------------------------------------------------------------------

@@ -278,8 +278,8 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 
 	public static void main(String[] args) throws Exception {
 		// vmstat, iostat -> /home/hadoop/flink-1.9-tpcds-master/log/
-		osMonitor("vmstat", "vmstat 1 1000");
-		osMonitor("iostat", "iostat -xtc 1 1000");
+//		osMonitor("vmstat", "vmstat 1 1000");
+//		osMonitor("iostat", "iostat -xtc 1 1000");
 
 		// startup checks and logging
 		EnvironmentInformation.logEnvironmentInfo(LOG, "TaskManager", args);

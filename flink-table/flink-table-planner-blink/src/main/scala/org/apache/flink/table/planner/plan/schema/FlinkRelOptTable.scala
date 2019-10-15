@@ -46,19 +46,19 @@ import java.util.{List => JList, Set => JSet}
 import scala.collection.JavaConversions._
 
 /**
-  * [[FlinkRelOptTable]] wraps a [[FlinkTable]]
-  *
-  * @param schema  the [[RelOptSchema]] this table belongs to
-  * @param rowType the type of rows returned by this table
-  * @param names   the identifier for this table. The identifier must be unique with
-  *                respect to the Connection producing this table.
-  * @param table   wrapped flink table
-  */
+ * [[FlinkRelOptTable]] wraps a [[FlinkTable]]
+ *
+ * @param schema  the [[RelOptSchema]] this table belongs to
+ * @param rowType the type of rows returned by this table
+ * @param names   the identifier for this table. The identifier must be unique with
+ *                respect to the Connection producing this table.
+ * @param table   wrapped flink table
+ */
 class FlinkRelOptTable protected(
-                                  schema: RelOptSchema,
-                                  rowType: RelDataType,
-                                  names: JList[String],
-                                  table: FlinkTable)
+  schema: RelOptSchema,
+  rowType: RelDataType,
+  names: JList[String],
+  table: FlinkTable)
   extends AbstractPreparingTable {
 
   // Default value of rowCount if there is no available stats.
@@ -67,7 +67,7 @@ class FlinkRelOptTable protected(
 
   // unique keySets of current table.
   lazy val uniqueKeysSet: Option[JSet[ImmutableBitSet]] = {
-    getPreDefinedStatistics match {
+    table.getStatistic match {
       case statistic: FlinkStatistic =>
         val uniqueKeys = statistic.getUniqueKeys
         if (uniqueKeys == null) {
@@ -95,12 +95,12 @@ class FlinkRelOptTable protected(
     new FlinkRelOptTable(schema, newRowType, names, newTable)
 
   /**
-    * Obtains an identifier for this table.
-    *
-    * Note: the qualified names are used for computing the digest of TableScan.
-    *
-    * @return qualified name
-    */
+   * Obtains an identifier for this table.
+   *
+   * Note: the qualified names are used for computing the digest of TableScan.
+   *
+   * @return qualified name
+   */
   override def getQualifiedName: JList[String] = {
     def explainSourceAsString(ts: TableSource[_]): JList[String] = {
       val tsDigest = ts.explainSource()
@@ -131,10 +131,10 @@ class FlinkRelOptTable protected(
   }
 
   /**
-    * Obtains the access type of the table.
-    *
-    * @return all access types including SELECT/UPDATE/INSERT/DELETE
-    */
+   * Obtains the access type of the table.
+   *
+   * @return all access types including SELECT/UPDATE/INSERT/DELETE
+   */
   override def getAllowedAccess: SqlAccessType = SqlAccessType.ALL
 
   override def unwrap[T](clazz: Class[T]): T = {
@@ -150,8 +150,8 @@ class FlinkRelOptTable protected(
   }
 
   /**
-    * Returns true if the given modality is supported, else false.
-    */
+   * Returns true if the given modality is supported, else false.
+   */
   override def supportsModality(modality: SqlModality): Boolean = modality match {
     case SqlModality.STREAM =>
       table.isInstanceOf[StreamableTable]
@@ -160,20 +160,20 @@ class FlinkRelOptTable protected(
   }
 
   /**
-    * Returns the type of rows returned by this table.
-    */
+   * Returns the type of rows returned by this table.
+   */
   override def getRowType: RelDataType = rowType
 
   /**
-    * Obtains whether a given column is monotonic.
-    *
-    * @param columnName column name
-    * @return true if the given column is monotonic
-    */
+   * Obtains whether a given column is monotonic.
+   *
+   * @param columnName column name
+   * @return true if the given column is monotonic
+   */
   override def getMonotonicity(columnName: String): SqlMonotonicity = {
     val columnIdx = rowType.getFieldNames.indexOf(columnName)
     if (columnIdx >= 0) {
-      for (collation: RelCollation <- getPreDefinedStatistics.getCollations) {
+      for (collation: RelCollation <- table.getStatistic.getCollations) {
         val fieldCollation: RelFieldCollation = collation.getFieldCollations.get(0)
         if (fieldCollation.getFieldIndex == columnIdx) {
           return fieldCollation.direction.monotonicity
@@ -184,22 +184,22 @@ class FlinkRelOptTable protected(
   }
 
   /**
-    * Returns flink table statistics.
-    */
+   * Returns flink table statistics.
+   */
   def getFlinkStatistic: FlinkStatistic = {
-    if (getPreDefinedStatistics != null) {
-      getPreDefinedStatistics
+    if (table.getStatistic != null) {
+      table.getStatistic
     } else {
       FlinkStatistic.UNKNOWN
     }
   }
 
   /**
-    * Returns an estimate of the number of rows in the table.
-    */
+   * Returns an estimate of the number of rows in the table.
+   */
   override def getRowCount: Double =
-    if (getPreDefinedStatistics != null) {
-      getPreDefinedStatistics match {
+    if (table.getStatistic != null) {
+      table.getStatistic match {
         case stats: FlinkStatistic =>
           if (stats.getRowCount != null) {
             stats.getRowCount
@@ -213,10 +213,10 @@ class FlinkRelOptTable protected(
     }
 
   /**
-    * Converts this table into a [[RelNode]] relational expression.
-    *
-    * @return the RelNode converted from this table
-    */
+   * Converts this table into a [[RelNode]] relational expression.
+   *
+   * @return the RelNode converted from this table
+   */
   override def toRel(context: ToRelContext): RelNode = {
     val cluster: RelOptCluster = context.getCluster
     if (table.isInstanceOf[TranslatableTable]) {
@@ -231,32 +231,32 @@ class FlinkRelOptTable protected(
   }
 
   /**
-    * Returns the [[RelOptSchema]] this table belongs to.
-    */
+   * Returns the [[RelOptSchema]] this table belongs to.
+   */
   override def getRelOptSchema: RelOptSchema = schema
 
   /**
-    * Returns whether the given columns are a key or a superset of a unique key
-    * of this table.
-    *
-    * Note: Return true means TRUE. However return false means FALSE or NOT KNOWN.
-    * It's better to use [[org.apache.calcite.rel.metadata.RelMetadataQuery]].areRowsUnique to
-    * distinguish FALSE with NOT KNOWN.
-    *
-    * @param columns Ordinals of key columns
-    * @return if the input columns bits represents a unique column set; false if not (or
-    *         if no metadata is available)
-    */
+   * Returns whether the given columns are a key or a superset of a unique key
+   * of this table.
+   *
+   * Note: Return true means TRUE. However return false means FALSE or NOT KNOWN.
+   * It's better to use [[org.apache.calcite.rel.metadata.RelMetadataQuery]].areRowsUnique to
+   * distinguish FALSE with NOT KNOWN.
+   *
+   * @param columns Ordinals of key columns
+   * @return if the input columns bits represents a unique column set; false if not (or
+   *         if no metadata is available)
+   */
   @Deprecated
   override def isKey(columns: ImmutableBitSet): Boolean = false
 
   /**
-    * Returns the referential constraints existing for this table. These constraints
-    * are represented over other tables using [[RelReferentialConstraint]] nodes.
-    */
+   * Returns the referential constraints existing for this table. These constraints
+   * are represented over other tables using [[RelReferentialConstraint]] nodes.
+   */
   override def getReferentialConstraints: JList[RelReferentialConstraint] = {
-    if (getPreDefinedStatistics != null) {
-      getPreDefinedStatistics.getReferentialConstraints
+    if (table.getStatistic != null) {
+      table.getStatistic.getReferentialConstraints
     } else {
       ImmutableList.of()
     }
@@ -264,50 +264,50 @@ class FlinkRelOptTable protected(
 
 
   /**
-    * Returns a description of the physical ordering (or orderings) of the rows
-    * returned from this table.
-    *
-    * @see [[org.apache.calcite.rel.metadata.RelMetadataQuery#collations(RelNode)]]
-    */
+   * Returns a description of the physical ordering (or orderings) of the rows
+   * returned from this table.
+   *
+   * @see [[org.apache.calcite.rel.metadata.RelMetadataQuery#collations(RelNode)]]
+   */
   override def getCollationList: JList[RelCollation] = {
-    if (getPreDefinedStatistics != null) {
-      getPreDefinedStatistics.getCollations
+    if (table.getStatistic != null) {
+      table.getStatistic.getCollations
     } else {
       ImmutableList.of()
     }
   }
 
   /**
-    * Returns a description of the physical distribution of the rows
-    * in this table.
-    *
-    * @see [[org.apache.calcite.rel.metadata.RelMetadataQuery#distribution(RelNode)]]
-    */
+   * Returns a description of the physical distribution of the rows
+   * in this table.
+   *
+   * @see [[org.apache.calcite.rel.metadata.RelMetadataQuery#distribution(RelNode)]]
+   */
   override def getDistribution: RelDistribution = {
-    if (getPreDefinedStatistics != null) {
-      getPreDefinedStatistics.getDistribution
+    if (table.getStatistic != null) {
+      table.getStatistic.getDistribution
     } else {
       FlinkRelDistributionTraitDef.INSTANCE.getDefault
     }
   }
 
   /**
-    * Generates code for this table, which is not supported now.
-    *
-    * @param clazz The desired collection class; for example [[org.apache.calcite.linq4j.Queryable]]
-    */
+   * Generates code for this table, which is not supported now.
+   *
+   * @param clazz The desired collection class; for example [[org.apache.calcite.linq4j.Queryable]]
+   */
   override def getExpression(clazz: java.lang.Class[_]): Expression =
     throw new UnsupportedOperationException
 
   /**
-    * Obtains whether the ordinal column has a default value, which is not supported now.
-    *
-    * @param rowType            rowType of field
-    * @param ordinal            index of the given column
-    * @param initializerContext the context for
-    *                           [[org.apache.calcite.sql2rel.InitializerExpressionFactory]] methods
-    * @return true if the column has a default value
-    */
+   * Obtains whether the ordinal column has a default value, which is not supported now.
+   *
+   * @param rowType            rowType of field
+   * @param ordinal            index of the given column
+   * @param initializerContext the context for
+   *                           [[org.apache.calcite.sql2rel.InitializerExpressionFactory]] methods
+   * @return true if the column has a default value
+   */
   override def columnHasDefaultValue(
                                       rowType: RelDataType,
                                       ordinal: Int,
@@ -319,19 +319,9 @@ class FlinkRelOptTable protected(
     throw new RuntimeException("Extending column not supported")
 
   /**
-    * We recognize all tables in FLink are temporal as they are changeable.
-    */
+   * We recognize all tables in FLink are temporal as they are changeable.
+   */
   override def isTemporal: Boolean = true
-
-  private var predefinedStatistics : FlinkStatistic = null
-
-  def getPreDefinedStatistics: FlinkStatistic = {
-    if (predefinedStatistics != null)
-      return predefinedStatistics
-    val tableStats = PredefinedStatistics.loadStats(names.get(names.size()-1).toLowerCase)
-    predefinedStatistics = new FlinkStatistic(tableStats)
-    return predefinedStatistics
-  }
 }
 
 object FlinkRelOptTable {

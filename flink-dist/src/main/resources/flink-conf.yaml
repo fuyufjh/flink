@@ -65,9 +65,9 @@ parallelism.default: 64
 jobmanager.execution.failover-strategy: region
 
 # The time in seconds after which a completed job expires and is purged from the job store.
-jobstore.expiration-time: 1000000
+#jobstore.expiration-time: 1000000
 # The job store cache size in bytes which is used to keep completed jobs in memory.
-jobstore.cache-size: 107374182400
+#jobstore.cache-size: 107374182400
 
 # task manager conf
 taskmanager.memory.preallocate: true
@@ -81,9 +81,9 @@ taskmanager.memory.off-heap: true
 #taskmanager.runtime.max-fan: 1024
 
 # table execute resource conf
-table.exec.resource.sort.memory: 2560 mb
-table.exec.resource.hash-join.memory: 2560 mb
-table.exec.resource.hash-agg.memory: 2560 mb
+#table.exec.resource.sort.memory: 256 mb
+#table.exec.resource.hash-join.memory: 256 mb
+#table.exec.resource.hash-agg.memory: 256 mb
 #table.exec.resource.external-buffer-memory: 10 mb
 
 # table execute spill conf
@@ -96,7 +96,7 @@ table.exec.resource.hash-agg.memory: 2560 mb
 #table.exec.shuffle-mode: batch
 
 # table optimize conf
-table.optimizer.join-reorder-enabled: true
+#table.optimizer.join-reorder-enabled: true
 
 # The default file system scheme and authority.
 #

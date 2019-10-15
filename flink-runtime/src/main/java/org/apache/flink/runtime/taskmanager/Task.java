@@ -136,7 +136,7 @@ public class Task implements Runnable, TaskActions, PartitionProducerStateProvid
 	/** The thread group that contains all task threads. */
 	private static final ThreadGroup TASK_THREADS_GROUP = new ThreadGroup("Flink Task Threads");
 
-	private static final ThreadFactory AFFINITY_THREAD_FACTORY = new GroupAffinityThreadFactory(TASK_THREADS_GROUP, false, AffinityStrategies.DIFFERENT_CORE);
+//	private static final ThreadFactory AFFINITY_THREAD_FACTORY = new GroupAffinityThreadFactory(TASK_THREADS_GROUP, false, AffinityStrategies.DIFFERENT_CORE);
 
 	/** For atomic state updates. */
 	private static final AtomicReferenceFieldUpdater<Task, ExecutionState> STATE_UPDATER =
@@ -409,10 +409,10 @@ public class Task implements Runnable, TaskActions, PartitionProducerStateProvid
 		invokableHasBeenCanceled = new AtomicBoolean(false);
 
 		// finally, create the executing thread, but do not start it
-//		executingThread = new Thread(TASK_THREADS_GROUP, this, taskNameWithSubtask);
+		executingThread = new Thread(TASK_THREADS_GROUP, this, taskNameWithSubtask);
 
-		executingThread = AFFINITY_THREAD_FACTORY.newThread(this);
-		executingThread.setName(taskNameWithSubtask);
+//		executingThread = AFFINITY_THREAD_FACTORY.newThread(this);
+//		executingThread.setName(taskNameWithSubtask);
 	}
 
 	// ------------------------------------------------------------------------
