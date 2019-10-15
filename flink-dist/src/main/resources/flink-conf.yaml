@@ -21,6 +21,31 @@
 # Common
 #==============================================================================
 
+##------ 复赛默认配置，请勿修改，修改后算作无效成绩！-------##
+# The heap size for the JobManager JVM
+jobmanager.heap.size: 8g
+# The heap size for the TaskManager JVM
+taskmanager.heap.size: 225g
+# The number of task slots that each TaskManager offers. Each slot runs one parallel pipeline.
+taskmanager.numberOfTaskSlots: 225
+##------ 复赛默认配置，请勿修改，修改后算作无效成绩！-------##
+
+##------- 建议配置（不配必挂） -------##
+# 超时相关参数
+akka.ask.timeout: 300 s
+akka.framesize: 102400kB
+akka.throughput: 100
+akka.client.timeout: 3600 s
+heartbeat.timeout: 300000
+# 临时文件目录，不要往/tmp目录下，/tmp目录所在磁盘很小
+io.tmp.dirs: /disk/1/tmp
+# gc相关配置
+env.java.opts.jobmanager: "-XX:+PrintGCDetails -XX:+PrintGCDateStamps  -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=2 -XX:GCLogFileSize=512M"
+env.java.opts.taskmanager: "-XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=2 -XX:GCLogFileSize=512M"
+##------ 建议配置（不配必挂）-------##
+
+##------ 其他配置，选手自己可以配置
+
 # The external address of the host on which the JobManager runs and can be
 # reached by the TaskManagers and any clients which want to connect. This setting
 # is only used in Standalone mode and may be overwritten on the JobManager side
@@ -29,66 +54,20 @@
 # the conf/masters file, this will be taken care of automatically. Yarn/Mesos
 # automatically configure the host name based on the hostname of the node where the
 # JobManager runs.
-# rpc ip
+
 jobmanager.rpc.address: localhost
+# The RPC port where the JobManager is reachable.
 jobmanager.rpc.port: 6123
-# Timeout for akka ask calls.
-akka.ask.timeout: 300 s
-# Timeout for all blocking calls on the client side.
-akka.client.timeout: 3600 s
-# Maximum number of messages until another actor is executed by the same thread.
-akka.throughput: 128
-# Maximum size of messages which are sent between the JobManager and the TaskManagers.
-akka.framesize: 131072kB
-# Timeout for requesting and receiving heartbeat for both sender and receiver sides
-heartbeat.timeout: 360000
-# The heap size for the JobManager JVM
-jobmanager.heap.size: 1024m
-# The heap size for the TaskManager JVM
-taskmanager.heap.size: 15g
-# The number of task slots that each TaskManager offers. Each slot runs one parallel pipeline.
-taskmanager.numberOfTaskSlots: 8
+
 # The parallelism used for programs that did not specify and other parallelism.
-parallelism.default: 8
-# The time in seconds after which a completed job expires and is purged from the job store.
-jobstore.expiration-time: 1000000
-# The job store cache size in bytes which is used to keep completed jobs in memory.
-jobstore.cache-size: 10737418240
+parallelism.default: 64
 
-# task manager conf
-taskmanager.memory.preallocate: true
-taskmanager.memory.off-heap: true
+jobmanager.execution.failover-strategy: region
 
-# jvm
-env.java.opts.jobmanager: -XX:+PrintGCDetails -XX:+PrintGCDateStamps  -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=2 -XX:GCLogFileSize=512M
-env.java.opts.taskmanager: -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=2 -XX:GCLogFileSize=512M
 
-# 以下配置需要修改对应的Java文件才能生效！
-
-# hashjoin conf
-#taskmanager.runtime.hashjoin-bloom-filters: true
-#taskmanager.runtime.max-fan: 1024
-
-# table execute resource conf
-table.exec.resource.sort.memory: 256 mb
-table.exec.resource.hash-join.memory: 256 mb
-table.exec.resource.hash-agg.memory: 256 mb
-#table.exec.resource.external-buffer-memory: 10 mb
-
-# table execute spill conf
-#table.exec.spill-compression.block-size: 64 kb
-
-# table execute agg conf
-#table.exec.window-agg.buffer-size-limit: 100000
-
-# table execute other conf
-#table.exec.shuffle-mode: batch
-
-# table optimize conf
-table.optimizer.join-reorder-enabled: true
 
 # The default file system scheme and authority.
-# 
+#
 # By default file paths without scheme are interpreted relative to the local
 # root file system 'file:///'. Use this to override the default and interpret
 # relative paths relative to a different file system,
@@ -107,9 +86,9 @@ table.optimizer.join-reorder-enabled: true
 # The path where metadata for master recovery is persisted. While ZooKeeper stores
 # the small ground truth for checkpoint and leader election, this location stores
 # the larger objects, like persisted dataflow graphs.
-# 
+#
 # Must be a durable file system that is accessible from all nodes
-# (like HDFS, S3, Ceph, nfs, ...) 
+# (like HDFS, S3, Ceph, nfs, ...)
 #
 # high-availability.storageDir: hdfs:///flink/ha/
 
@@ -148,15 +127,13 @@ table.optimizer.join-reorder-enabled: true
 # state.savepoints.dir: hdfs://namenode-host:port/flink-checkpoints
 
 # Flag to enable/disable incremental checkpoints for backends that
-# support incremental checkpoints (like the RocksDB state backend). 
+# support incremental checkpoints (like the RocksDB state backend).
 #
 # state.backend.incremental: false
 
 # The failover strategy, i.e., how the job computation recovers from task failures.
 # Only restart tasks that may have been affected by the task failure, which typically includes
 # downstream tasks and potentially upstream tasks if their produced data is no longer available for consumption.
-
-jobmanager.execution.failover-strategy: region
 
 #==============================================================================
 # Rest & web frontend
@@ -225,10 +202,10 @@ jobmanager.execution.failover-strategy: region
 #
 # classloader.resolve-order: child-first
 
-# The amount of memory going to the network stack. These numbers usually need 
+# The amount of memory going to the network stack. These numbers usually need
 # no tuning. Adjusting them may be necessary in case of an "Insufficient number
 # of network buffers" error. The default min is 64MB, the default max is 1GB.
-# 
+#
 # taskmanager.network.memory.fraction: 0.1
 # taskmanager.network.memory.min: 64mb
 # taskmanager.network.memory.max: 1gb
@@ -288,4 +265,3 @@ jobmanager.execution.failover-strategy: region
 
 # Interval in milliseconds for refreshing the monitored directories.
 #historyserver.archive.fs.refresh-interval: 10000
-
