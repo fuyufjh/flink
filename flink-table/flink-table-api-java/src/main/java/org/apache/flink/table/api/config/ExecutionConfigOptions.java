@@ -103,25 +103,25 @@ public class ExecutionConfigOptions {
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_EXTERNAL_BUFFER_MEMORY =
 		key("table.exec.resource.external-buffer-memory")
-			.defaultValue("10 mb")
+			.defaultValue("100 mb")
 			.withDescription("Sets the external buffer memory size that is used in sort merge join and nested join and over window.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_HASH_AGG_MEMORY =
 		key("table.exec.resource.hash-agg.memory")
-			.defaultValue("256 mb")
+			.defaultValue("2560 mb")
 			.withDescription("Sets the managed memory size of hash aggregate operator.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_HASH_JOIN_MEMORY =
 		key("table.exec.resource.hash-join.memory")
-			.defaultValue("256 mb")
+			.defaultValue("2560 mb")
 			.withDescription("Sets the managed memory for hash join operator. It defines the lower limit.");
 
 	@Documentation.TableOption(execMode = Documentation.ExecMode.BATCH)
 	public static final ConfigOption<String> TABLE_EXEC_RESOURCE_SORT_MEMORY =
 		key("table.exec.resource.sort.memory")
-			.defaultValue("256 mb")
+			.defaultValue("2560 mb")
 			.withDescription("Sets the managed buffer memory size for sort operator.");
 
 	// ------------------------------------------------------------------------
@@ -174,7 +174,7 @@ public class ExecutionConfigOptions {
 
 	public static final ConfigOption<Integer> SQL_EXEC_RUNTIME_FILTER_SIZE_MAX =
 		key("sql.exec.runtime-filter.size.max.mb")
-			.defaultValue(50)
+			.defaultValue(500)
 			.withDescription("The max size of MB to BloomFilter. A too large BloomFilter will cause " +
 				"the JobMaster bandwidth to fill up and affect scheduling.");
 
@@ -186,7 +186,7 @@ public class ExecutionConfigOptions {
 
 	public static final ConfigOption<Long> SQL_EXEC_RUNTIME_FILTER_PROBE_ROW_COUNT_MIN =
 		key("sql.exec.runtime-filter.probe.row-count.min")
-			.defaultValue(10000000L)
+			.defaultValue(100000000L)
 			.withDescription("The minimum row count of probe side to enable runtime filter." +
 				"Probe.rowCount >= minProbeRowCount.");
 
