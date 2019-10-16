@@ -184,7 +184,7 @@ public class TaskManagerOptions {
 	 */
 	public static final ConfigOption<String> MEMORY_SEGMENT_SIZE =
 			key("taskmanager.memory.segment-size")
-			.defaultValue("32kb")
+			.defaultValue("64kb")
 			.withDescription("Size of memory buffers used by the network stack and the memory manager.");
 
 	/**

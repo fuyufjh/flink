@@ -278,8 +278,8 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 
 	public static void main(String[] args) throws Exception {
 		// vmstat, iostat -> /home/hadoop/flink-1.9-tpcds-master/log/
-//		osMonitor("vmstat", "vmstat 1 1000");
-//		osMonitor("iostat", "iostat -xtc 1 1000");
+		osMonitor("vmstat", "vmstat 1 2000");
+		osMonitor("iostat", "iostat -xtc 1 2000");
 
 		// startup checks and logging
 		EnvironmentInformation.logEnvironmentInfo(LOG, "TaskManager", args);
@@ -434,7 +434,7 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 	}
 
 	private static void osMonitor(String fileName, String cmd) throws IOException {
-		File logDir = new File("/home/hadoop/flink-1.9-tpcds-master/log/");
+		File logDir = new File("/disk/1/flink-1.9-tpcds-master/log/");
 		if(logDir.exists() && logDir.isDirectory()) {
 			File osLog = new File(logDir, fileName + ".log");
 			osLog.createNewFile();
