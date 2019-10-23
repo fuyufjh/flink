@@ -78,7 +78,7 @@ public class BytesHashMap {
 
 	private static final double LOAD_FACTOR = 0.75;
 	//a smaller bucket can make the best of l1/l2/l3 cache.
-	private static final long INIT_BUCKET_MEMORY_IN_BYTES = 1024 * 1024L;
+	private static final long INIT_BUCKET_MEMORY_IN_BYTES = 16 * 1024 * 1024L;
 
 	private final int numBucketsPerSegment;
 	private final int numBucketsPerSegmentBits;
