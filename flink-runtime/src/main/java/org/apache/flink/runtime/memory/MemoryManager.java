@@ -639,7 +639,7 @@ public class MemoryManager {
 		void returnSegmentToPool(MemorySegment segment) {
 			if (segment.getClass() == HybridMemorySegment.class) {
 				HybridMemorySegment heapSegment = (HybridMemorySegment) segment;
-				availableMemory.add(heapSegment.getArray());
+				availableMemory.addFirst(heapSegment.getArray());
 				heapSegment.free();
 			}
 			else {
@@ -690,7 +690,7 @@ public class MemoryManager {
 			if (segment.getClass() == HybridMemorySegment.class) {
 				HybridMemorySegment hybridSegment = (HybridMemorySegment) segment;
 				ByteBuffer buf = hybridSegment.getOffHeapBuffer();
-				availableMemory.add(buf);
+				availableMemory.addFirst(buf);
 				hybridSegment.free();
 			}
 			else {

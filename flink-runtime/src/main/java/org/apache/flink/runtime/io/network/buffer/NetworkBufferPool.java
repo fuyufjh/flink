@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
@@ -63,7 +64,7 @@ public class NetworkBufferPool implements BufferPoolFactory, MemorySegmentProvid
 
 	private final int memorySegmentSize;
 
-	private final ArrayBlockingQueue<MemorySegment> availableMemorySegments;
+	private final LinkedBlockingDeque<MemorySegment> availableMemorySegments;
 
 	private volatile boolean isDestroyed;
 
@@ -107,7 +108,7 @@ public class NetworkBufferPool implements BufferPoolFactory, MemorySegmentProvid
 		final long sizeInLong = (long) segmentSize;
 
 		try {
-			this.availableMemorySegments = new ArrayBlockingQueue<>(numberOfSegmentsToAllocate);
+			this.availableMemorySegments = new LinkedBlockingDeque<>(numberOfSegmentsToAllocate);
 		}
 		catch (OutOfMemoryError err) {
 			throw new OutOfMemoryError("Could not allocate buffer queue of length "
@@ -150,7 +151,7 @@ public class NetworkBufferPool implements BufferPoolFactory, MemorySegmentProvid
 		// Adds the segment back to the queue, which does not immediately free the memory
 		// however, since this happens when references to the global pool are also released,
 		// making the availableMemorySegments queue and its contained object reclaimable
-		availableMemorySegments.add(checkNotNull(segment));
+		availableMemorySegments.addFirst(checkNotNull(segment));
 	}
 
 	@Override
@@ -208,9 +209,9 @@ public class NetworkBufferPool implements BufferPoolFactory, MemorySegmentProvid
 	private void recycleMemorySegments(Collection<MemorySegment> segments, int size) throws IOException {
 		synchronized (factoryLock) {
 			numTotalRequiredBuffers -= size;
-
-			availableMemorySegments.addAll(segments);
-
+			for(MemorySegment segment: segments) {
+				availableMemorySegments.addFirst(segment);
+			}
 			// note: if this fails, we're fine for the buffer pool since we already recycled the segments
 			redistributeBuffers();
 		}

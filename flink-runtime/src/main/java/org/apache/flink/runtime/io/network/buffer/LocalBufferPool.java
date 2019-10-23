@@ -259,7 +259,7 @@ class LocalBufferPool implements BufferPool {
 					return null;
 				}
 			}
-
+//			LOG.info("availableMemorySegments is not empty! size = " + availableMemorySegments.size());
 			return availableMemorySegments.poll();
 		}
 	}
@@ -276,7 +276,7 @@ class LocalBufferPool implements BufferPool {
 				} else {
 					listener = registeredListeners.poll();
 					if (listener == null) {
-						availableMemorySegments.add(segment);
+						availableMemorySegments.addFirst(segment);
 						availableMemorySegments.notify();
 						return;
 					}
