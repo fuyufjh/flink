@@ -55,6 +55,19 @@ extends InputFormatTableSource[BaseRow]
   with ProjectableTableSource[BaseRow]
   with FilterableTableSource[BaseRow] {
 
+  // To be compatible with QueryBenchmark
+  @deprecated
+  def this(
+            schema: TableSchema,
+            filePath: Path,
+            enumerateNestedFiles: Boolean,
+            numTimes: Int,
+            sourceName: String,
+            uniqueKeySet: JSet[JSet[String]],
+            selectFields: Array[Int]) {
+    this(schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, selectFields, null);
+  }
+
   lazy val LOG: Logger = LoggerFactory.getLogger(getClass)
 
   private var cachedStats: Option[TableStats] = None
