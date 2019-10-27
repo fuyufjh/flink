@@ -60,7 +60,7 @@ jobmanager.rpc.address: localhost
 jobmanager.rpc.port: 6123
 
 # The parallelism used for programs that did not specify and other parallelism.
-parallelism.default: 64
+parallelism.default: 128
 
 jobmanager.execution.failover-strategy: region
 
