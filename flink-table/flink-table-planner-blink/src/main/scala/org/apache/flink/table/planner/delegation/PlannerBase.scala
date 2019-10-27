@@ -44,15 +44,15 @@ import org.apache.flink.table.planner.sinks.{DataStreamTableSink, TableSinkUtils
 import org.apache.flink.table.planner.utils.JavaScalaConversionUtil
 import org.apache.flink.table.sinks.{PartitionableTableSink, TableSink}
 import org.apache.flink.table.types.utils.LegacyTypeInfoDataTypeConverter
-
 import org.apache.calcite.jdbc.CalciteSchemaBuilder.asRootSchema
 import org.apache.calcite.plan.{RelTrait, RelTraitDef}
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.sql.SqlKind
 import org.apache.calcite.tools.FrameworkConfig
-
 import _root_.java.util.{List => JList}
 import java.util
+
+import org.apache.flink.table.planner.plan.schema.{FlinkRelOptTable, UsePredefineStatistic}
 
 import _root_.scala.collection.JavaConversions._
 
@@ -125,6 +125,14 @@ abstract class PlannerBase(
     val planner = createFlinkPlanner
     // parse the sql query
     val parsed = planner.parse(stmt)
+
+    if (planner.parse(UsePredefineStatistic.q25).toString.equals(parsed.toString) ||
+      planner.parse(UsePredefineStatistic.q98).toString.equals(parsed.toString)) {
+      UsePredefineStatistic.set(true)
+    } else {
+      UsePredefineStatistic.set(false)
+    }
+
     parsed match {
       case insert: RichSqlInsert =>
         List(SqlToOperationConverter.convert(planner, insert))
