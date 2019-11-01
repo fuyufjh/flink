@@ -250,10 +250,9 @@ public class ParquetTableSourceUtil {
 
 		if (typeInfo == BasicTypeInfo.BYTE_TYPE_INFO ||
 			typeInfo == BasicTypeInfo.SHORT_TYPE_INFO ||
-			typeInfo == BasicTypeInfo.INT_TYPE_INFO) {
-			return new Tuple2<>(FilterApi.intColumn(columnName), (Integer) value);
-		} else if (typeInfo == BasicTypeInfo.LONG_TYPE_INFO) {
-			return new Tuple2<>(FilterApi.longColumn(columnName), (Long) value);
+			typeInfo == BasicTypeInfo.INT_TYPE_INFO ||
+			typeInfo == BasicTypeInfo.LONG_TYPE_INFO) {
+			return new Tuple2<>(FilterApi.longColumn(columnName), ((Number) value).longValue());
 		} else if (typeInfo == BasicTypeInfo.FLOAT_TYPE_INFO) {
 			return new Tuple2<>(FilterApi.floatColumn(columnName), (Float) value);
 		} else if (typeInfo == BasicTypeInfo.BOOLEAN_TYPE_INFO) {
