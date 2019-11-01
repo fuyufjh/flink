@@ -110,6 +110,10 @@ class PushFilterIntoTableSourceScanRule extends RelOptRule(
     // check whether framework still need to do a filter
     if (remainingPredicates.isEmpty && unconvertedRexNodes.isEmpty) {
       call.transformTo(newScan)
+    } else if (remainingPredicates.size() == predicates.length) {
+      // The predicates in filter operator remains unchanged
+      val newFilter = filter.copy(filter.getTraitSet, newScan, filter.getCondition)
+      call.transformTo(newFilter)
     } else {
       relBuilder.push(scan)
       val converter = new RexNodeConverter(relBuilder)

@@ -100,7 +100,8 @@ object RexNodeExtractor extends Logging {
     val convertedExpressions = new mutable.ArrayBuffer[Expression]
     val unconvertedRexNodes = new mutable.ArrayBuffer[RexNode]
     val inputNames = inputFieldNames.asScala.toArray
-    val converter = new RexNodeToExpressionConverter(inputNames, functionCatalog, timeZone)
+    // val converter = new RexNodeToExpressionConverter(inputNames, functionCatalog, timeZone)
+    val converter = new RexNodeToExpressionConverterV2(inputNames, functionCatalog)
 
     conjunctions.asScala.foreach(rex => {
       rex.accept(converter) match {
