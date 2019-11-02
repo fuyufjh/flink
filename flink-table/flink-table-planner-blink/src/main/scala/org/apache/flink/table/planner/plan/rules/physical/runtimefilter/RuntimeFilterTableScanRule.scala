@@ -53,12 +53,19 @@ class RuntimeFilterTableScanRule extends RelOptRule(
     val relOptTable = scan.getTable.unwrap(classOf[FlinkRelOptTable])
     val tableSourceTable = relOptTable.unwrap(classOf[TableSourceTable[BaseRow]])
     val parquetTableSource = tableSourceTable.tableSource.asInstanceOf[ParquetTableSource]
+    val selectFieldNames = parquetTableSource.selectFieldNames();
 
     var newTableSource = parquetTableSource
     for (rf <- rfs) {
       val broadcastId = rf.getOperator.asInstanceOf[SqlRuntimeFilterFunction].getBroadcastId
       val inputRef = rf.getOperands.get(0).asInstanceOf[RexInputRef]
-      newTableSource = newTableSource.applyRuntimeFilter(broadcastId, inputRef.getIndex)
+      if (selectFieldNames(inputRef.getIndex).endsWith("date_sk")) {
+        newTableSource = newTableSource.applyRuntimeFilter(broadcastId, inputRef.getIndex)
+      }
+    }
+
+    if (newTableSource == parquetTableSource) {
+      return
     }
 
     val newTableSourceTable = tableSourceTable.replaceTableSource(newTableSource)
