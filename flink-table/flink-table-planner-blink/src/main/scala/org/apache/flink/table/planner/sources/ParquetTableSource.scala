@@ -52,8 +52,7 @@ class ParquetTableSource(
     selectFields: Array[Int] = null,
     filterPredicate: FilterPredicate = null)
 extends InputFormatTableSource[BaseRow]
-  with ProjectableTableSource[BaseRow]
-  with FilterableTableSource[BaseRow] {
+  with ProjectableTableSource[BaseRow] {
 
   // To be compatible with QueryBenchmark
   @deprecated
@@ -74,7 +73,7 @@ extends InputFormatTableSource[BaseRow]
 
   protected var limit: Long = Long.MaxValue
 
-  override def isFilterPushedDown: Boolean = filterPredicate != null
+  def isFilterPushedDown: Boolean = filterPredicate != null
 
   override def projectFields(fields: Array[Int]): ParquetTableSource = {
     new ParquetTableSource(
@@ -93,7 +92,7 @@ extends InputFormatTableSource[BaseRow]
     selectFieldDataTypes().map(fromDataTypeToLogicalType)
   }
 
-  private def selectFieldNames(): Array[String] = {
+  def selectFieldNames(): Array[String] = {
     if (selectFields == null) {
       schema.getFieldNames
     } else {
@@ -147,7 +146,7 @@ extends InputFormatTableSource[BaseRow]
     }
   }
 
-  override def applyPredicate(predicates: util.List[Expression]): TableSource[BaseRow] = {
+  def applyPredicate(predicates: util.List[Expression]): TableSource[BaseRow] = {
     // try to convert Flink filter expressions to Parquet FilterPredicates
     val convertedPredicates = new util.ArrayList[FilterPredicate](predicates.size)
 
@@ -182,5 +181,20 @@ extends InputFormatTableSource[BaseRow]
     val predicateString = if (filterPredicate != null) filterPredicate.toString else "TRUE"
     val fieldsString = if (selectFields != null) selectFields.mkString("[", ", ", "]") else "[]"
     s"ParquetTableSource[schema=$schemaString, fields=$fieldsString, filter=$predicateString]"
+  }
+
+  def applyRuntimeFilter(broadcastId: String, columnIndex: Int): ParquetTableSource = {
+    val udp = new RuntimeFilterUDP(broadcastId)
+    val field = selectFieldNames()(columnIndex)
+    val additionalPredicate = FilterApi.userDefined(FilterApi.longColumn(field), udp)
+
+    val filterPredicateNew = if (filterPredicate == null) {
+      additionalPredicate
+    } else {
+      FilterApi.and(filterPredicate, additionalPredicate)
+    }
+
+    new ParquetTableSource(
+      schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, selectFields, filterPredicateNew)
   }
 }

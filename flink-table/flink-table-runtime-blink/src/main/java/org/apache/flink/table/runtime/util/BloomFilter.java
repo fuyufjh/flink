@@ -46,6 +46,8 @@ public class BloomFilter {
 	private final int numHashFunctions;
 	private final BitSet bitSet;
 
+	private LongRange valueRange = new LongRange(Long.MAX_VALUE, Long.MIN_VALUE);
+
 	public BloomFilter(long maxNumEntries) {
 		this(maxNumEntries, DEFAULT_FPP);
 	}
@@ -63,10 +65,11 @@ public class BloomFilter {
 		this.bitSet = new BitSet(this.numBits);
 	}
 
-	private BloomFilter(long[] bits, int numFuncs) {
+	private BloomFilter(long[] bits, int numFuncs, LongRange valueRange) {
 		this.numBits = bits.length * Long.SIZE;
 		this.numHashFunctions = numFuncs;
 		this.bitSet = new BitSet(bits);
+		this.valueRange = valueRange;
 	}
 
 	// Thomas Wang's integer hash function
@@ -99,6 +102,12 @@ public class BloomFilter {
 			int pos = combinedHash % numBits;
 			bitSet.set(pos);
 		}
+	}
+
+	public void addLongValue(long value) {
+		final LongRange range = this.valueRange;
+		range.max = Long.max(range.max, value);
+		range.min = Long.min(range.min, value);
 	}
 
 	public boolean testHash(long hash64) {
@@ -154,21 +163,26 @@ public class BloomFilter {
 	public static byte[] toBytes(BloomFilter filter) {
 		long[] bitSet = filter.getBitSet();
 		int longLen = bitSet.length;
-		byte[] bytes = new byte[1 + 4 + longLen * 8];
+		byte[] bytes = new byte[21 + longLen * 8];
 		UNSAFE.putByte(bytes, BYTE_ARRAY_BASE_OFFSET, (byte) filter.numHashFunctions);
 		UNSAFE.putInt(bytes, BYTE_ARRAY_BASE_OFFSET + 1, longLen);
+		UNSAFE.putLong(bytes, BYTE_ARRAY_BASE_OFFSET + 5, filter.valueRange.min);
+		UNSAFE.putLong(bytes, BYTE_ARRAY_BASE_OFFSET + 13, filter.valueRange.max);
 		UNSAFE.copyMemory(bitSet, LONG_ARRAY_OFFSET,
-				bytes, BYTE_ARRAY_BASE_OFFSET + 5, longLen * 8);
+				bytes, BYTE_ARRAY_BASE_OFFSET + 21, longLen * 8);
 		return bytes;
 	}
 
 	public static BloomFilter fromBytes(byte[] bytes) {
 		byte numHashFunc = UNSAFE.getByte(bytes, BYTE_ARRAY_BASE_OFFSET);
 		int longLen = UNSAFE.getInt(bytes, BYTE_ARRAY_BASE_OFFSET + 1);
+		long minValue = UNSAFE.getLong(bytes, BYTE_ARRAY_BASE_OFFSET + 5);
+		long maxValue = UNSAFE.getLong(bytes, BYTE_ARRAY_BASE_OFFSET + 13);
+		LongRange valueRange = new LongRange(minValue, maxValue);
 		long[] data = new long[longLen];
-		UNSAFE.copyMemory(bytes, BYTE_ARRAY_BASE_OFFSET + 5,
+		UNSAFE.copyMemory(bytes, BYTE_ARRAY_BASE_OFFSET + 21,
 				data, LONG_ARRAY_OFFSET, longLen * 8);
-		return new BloomFilter(data, numHashFunc);
+		return new BloomFilter(data, numHashFunc, valueRange);
 	}
 
 	/**
@@ -215,7 +229,15 @@ public class BloomFilter {
 			throw new IllegalArgumentException("bf1 NumHashFunctions/NumBits does not match bf2");
 		}
 
-		for (int idx = 5 + BYTE_ARRAY_BASE_OFFSET; idx < bf1Length + BYTE_ARRAY_BASE_OFFSET; idx += 8) {
+		long minValue1 = UNSAFE.getLong(bf1Bytes, BYTE_ARRAY_BASE_OFFSET + bf1Start + 5);
+		long minValue2 = UNSAFE.getLong(bf2Bytes, BYTE_ARRAY_BASE_OFFSET + bf2Start + 5);
+		UNSAFE.putLong(bf1Bytes, BYTE_ARRAY_BASE_OFFSET + bf1Start + 5, Long.min(minValue1, minValue2));
+
+		long maxValue1 = UNSAFE.getLong(bf1Bytes, BYTE_ARRAY_BASE_OFFSET + bf1Start + 13);
+		long maxValue2 = UNSAFE.getLong(bf2Bytes, BYTE_ARRAY_BASE_OFFSET + bf2Start + 13);
+		UNSAFE.putLong(bf1Bytes, BYTE_ARRAY_BASE_OFFSET + bf1Start + 13, Long.max(maxValue1, maxValue2));
+
+		for (int idx = 21 + BYTE_ARRAY_BASE_OFFSET; idx < bf1Length + BYTE_ARRAY_BASE_OFFSET; idx += 8) {
 			long l1 = UNSAFE.getLong(bf1Bytes, bf1Start + idx);
 			long l2 = UNSAFE.getLong(bf2Bytes, bf2Start + idx);
 			UNSAFE.putLong(bf1Bytes, bf1Start + idx, l1 | l2);
@@ -284,5 +306,27 @@ public class BloomFilter {
 		public void clear() {
 			Arrays.fill(data, 0);
 		}
+	}
+
+	public static class LongRange {
+		private long min;
+		private long max;
+
+		public LongRange(long min, long max) {
+			this.min = min;
+			this.max = max;
+		}
+
+		public long getMin() {
+			return min;
+		}
+
+		public long getMax() {
+			return max;
+		}
+	}
+
+	public LongRange getValueRange() {
+		return valueRange;
 	}
 }

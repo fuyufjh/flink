@@ -418,4 +418,8 @@ object FlinkBatchRuleSets {
     UselessRfBuilderRemoveRule.INSTANCE,
     FlinkCalcRemoveRule.INSTANCE
   )
+
+  val RUNTIME_FILTER_TABLE_SCAN_RULE: RuleSet = RuleSets.ofList(
+    RuntimeFilterTableScanRule.INSTANCE
+  )
 }
