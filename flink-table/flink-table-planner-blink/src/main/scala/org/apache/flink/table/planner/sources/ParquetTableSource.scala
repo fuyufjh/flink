@@ -75,7 +75,7 @@ class ParquetTableSource(
     selectFieldDataTypes().map(fromDataTypeToLogicalType)
   }
 
-  private def selectFieldNames(): Array[String] = {
+  def selectFieldNames(): Array[String] = {
     if (selectFields == null) {
       schema.getFieldNames
     } else {

@@ -26,13 +26,14 @@ import org.apache.calcite.plan.RelOptRule.{any, operand}
 import org.apache.calcite.plan.{RelOptRule, RelOptRuleCall, RelOptUtil}
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.rel.core.Calc
-import org.apache.calcite.rex.{RexCall, RexProgramBuilder}
+import org.apache.calcite.rex.{RexCall, RexInputRef, RexProgramBuilder}
 import org.apache.calcite.sql.SqlOperator
 import java.lang
 
 import org.apache.flink.table.api.config.ExecutionConfigOptions
-import org.apache.flink.table.planner.plan.nodes.physical.batch.BatchExecCalc
+import org.apache.flink.table.planner.plan.nodes.physical.batch.{BatchExecCalc, BatchExecTableSourceScan}
 import org.apache.flink.table.planner.plan.utils.FlinkRelOptUtil
+import org.apache.flink.table.planner.sources.ParquetTableSource
 import org.apache.flink.table.runtime.util.BloomFilter
 
 import scala.collection.JavaConversions._
@@ -54,6 +55,20 @@ class UselessRuntimeFilterRemoveRule extends RelOptRule(
     val calc: BatchExecCalc = call.rel(0)
     val conf = FlinkRelOptUtil.getTableConfigFromContext(calc)
 
+    // HACK: do not remove runtime filter on date_sk columns
+    val dateKeys = new java.util.ArrayList[Int]()
+    if (call.rel(1).isInstanceOf[BatchExecTableSourceScan]) {
+      val scan: BatchExecTableSourceScan = call.rel(1)
+      val parquetTableSource = scan.tableSource.asInstanceOf[ParquetTableSource]
+      val selectFieldNames = parquetTableSource.selectFieldNames()
+      for ((field, index) <- selectFieldNames.zipWithIndex) {
+        if (field.endsWith("_date_sk")) {
+          dateKeys.add(index)
+        }
+      }
+    }
+    // HACK: ends
+    
     val minProbeRowCount = conf.getConfiguration.getLong(
       ExecutionConfigOptions.SQL_EXEC_RUNTIME_FILTER_PROBE_ROW_COUNT_MIN)
 
@@ -61,15 +76,20 @@ class UselessRuntimeFilterRemoveRule extends RelOptRule(
       ExecutionConfigOptions.SQL_EXEC_RUNTIME_FILTER_BUILD_PROBE_ROW_COUNT_RATIO_MAX)
 
     val rfs = findRuntimeFilters(calc.getProgram)
-        .map(_.getOperator.asInstanceOf[SqlRuntimeFilterFunction])
     val toBeRemove = new mutable.ArrayBuffer[SqlOperator]
-    rfs.foreach { rf =>
-      val suitable = ndvRowCountSuitable(conf, rf.rowCount, rf.builder.ndv, rf.ndv) &&
+    rfs.foreach { f =>
+      if (f.operands(0).isInstanceOf[RexInputRef] &&
+        dateKeys.contains(f.operands(0).asInstanceOf[RexInputRef].getIndex)) {
+         // HACK: don't remove
+      } else {
+        val rf = f.getOperator.asInstanceOf[SqlRuntimeFilterFunction]
+        val suitable = ndvRowCountSuitable(conf, rf.rowCount, rf.builder.ndv, rf.ndv) &&
           rf.rowCount >= minProbeRowCount &&
           rf.builder.rowCount / rf.rowCount <= maxRowCountRatio
-      if (!suitable) {
-        rf.builder.filters -= rf
-        toBeRemove += rf
+        if (!suitable) {
+          rf.builder.filters -= rf
+          toBeRemove += rf
+        }
       }
     }
 

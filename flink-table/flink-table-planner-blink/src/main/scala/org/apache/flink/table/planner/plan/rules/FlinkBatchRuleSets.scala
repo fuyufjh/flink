@@ -409,17 +409,15 @@ object FlinkBatchRuleSets {
     RuntimeFilterExchangeTransposeRule.INSTANCE,
     RfBuilderExchangeTransposeRule.INSTANCE,
     RfBuilderJoinTransposeRule.INSTANCE,
+    RuntimeFilterJoinTransposeRule.INSTANCE,
     RuntimeFilterBuilderMerger.INSTANCE,
-    FlinkCalcMergeRule.INSTANCE
+    FlinkCalcMergeRule.INSTANCE,
+    CalcUnionTransposeRule.INSTANCE
   )
 
   val RUNTIME_FILTER_REMOVE_RULES: RuleSet = RuleSets.ofList(
     UselessRuntimeFilterRemoveRule.INSTANCE,
     UselessRfBuilderRemoveRule.INSTANCE,
     FlinkCalcRemoveRule.INSTANCE
-  )
-
-  val ADDITIONAL_PHYSICAL_RULES: RuleSet = RuleSets.ofList(
-    CalcUnionTransposeRule.INSTANCE
   )
 }
