@@ -22,11 +22,11 @@ import org.apache.flink.table.planner.plan.nodes.logical._
 import org.apache.flink.table.planner.plan.rules.logical._
 import org.apache.flink.table.planner.plan.rules.physical.FlinkExpandConversionRule
 import org.apache.flink.table.planner.plan.rules.physical.batch._
-
 import org.apache.calcite.rel.core.RelFactories
 import org.apache.calcite.rel.logical.{LogicalIntersect, LogicalMinus, LogicalUnion}
 import org.apache.calcite.rel.rules._
 import org.apache.calcite.tools.{RuleSet, RuleSets}
+import org.apache.flink.table.planner.plan.rules.physical.other.CalcUnionTransposeRule
 import org.apache.flink.table.planner.plan.rules.physical.runtimefilter._
 
 import scala.collection.JavaConverters._
@@ -417,5 +417,9 @@ object FlinkBatchRuleSets {
     UselessRuntimeFilterRemoveRule.INSTANCE,
     UselessRfBuilderRemoveRule.INSTANCE,
     FlinkCalcRemoveRule.INSTANCE
+  )
+
+  val ADDITIONAL_PHYSICAL_RULES: RuleSet = RuleSets.ofList(
+    CalcUnionTransposeRule.INSTANCE
   )
 }
