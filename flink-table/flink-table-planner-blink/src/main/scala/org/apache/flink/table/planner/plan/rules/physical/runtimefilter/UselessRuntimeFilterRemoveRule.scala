@@ -32,6 +32,7 @@ import java.lang
 
 import org.apache.flink.table.api.config.ExecutionConfigOptions
 import org.apache.flink.table.planner.plan.nodes.physical.batch.{BatchExecCalc, BatchExecTableSourceScan}
+import org.apache.flink.table.planner.plan.schema.OptimizerFlags
 import org.apache.flink.table.planner.plan.utils.FlinkRelOptUtil
 import org.apache.flink.table.planner.sources.ParquetTableSource
 import org.apache.flink.table.runtime.util.BloomFilter
@@ -57,7 +58,8 @@ class UselessRuntimeFilterRemoveRule extends RelOptRule(
 
     // HACK: do not remove runtime filter on date_sk columns
     val dateKeys = new java.util.ArrayList[Int]()
-    if (call.rel(1).isInstanceOf[BatchExecTableSourceScan]) {
+    if (!OptimizerFlags.getFlag(OptimizerFlags.DISABLE_RUNTIME_FILTER_DATA_SK_HACK) &&
+      call.rel(1).isInstanceOf[BatchExecTableSourceScan]) {
       val scan: BatchExecTableSourceScan = call.rel(1)
       val parquetTableSource = scan.tableSource.asInstanceOf[ParquetTableSource]
       val selectFieldNames = parquetTableSource.selectFieldNames()

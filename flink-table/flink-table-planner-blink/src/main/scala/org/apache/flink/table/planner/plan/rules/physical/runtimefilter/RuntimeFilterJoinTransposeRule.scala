@@ -11,6 +11,7 @@ import org.apache.flink.table.functions.sql.internal.SqlRuntimeFilterFunction
 import org.apache.flink.table.runtime.operators.join.FlinkJoinType
 import org.apache.flink.table.planner.plan.rules.physical.runtimefilter.BaseRuntimeFilterPushDownRule.findRuntimeFilters
 import org.apache.flink.table.planner.plan.rules.physical.runtimefilter.RuntimeFilterJoinTransposeRule._
+import org.apache.flink.table.planner.plan.schema.OptimizerFlags
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -25,6 +26,10 @@ class RuntimeFilterJoinTransposeRule extends RelOptRule(
 ) {
 
   override def matches(call: RelOptRuleCall): Boolean = {
+    if (OptimizerFlags.getFlag(OptimizerFlags.DISABLE_RUNTIME_FILTER_JOIN_TRANSPOSE_RULE)) {
+      return false
+    }
+
     val calc: BatchExecCalc = call.rel(0)
     val join: BatchExecHashJoin = call.rel(1)
     join.flinkJoinType == FlinkJoinType.INNER &&

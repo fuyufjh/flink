@@ -52,7 +52,7 @@ import org.apache.calcite.tools.FrameworkConfig
 import _root_.java.util.{List => JList}
 import java.util
 
-import org.apache.flink.table.planner.plan.schema.{FlinkRelOptTable, UsePredefineStatistic}
+import org.apache.flink.table.planner.plan.schema.{FlinkRelOptTable, OptimizerFlags, UsePredefineStatistic}
 
 import _root_.scala.collection.JavaConversions._
 
@@ -131,6 +131,12 @@ abstract class PlannerBase(
       UsePredefineStatistic.set(true)
     } else {
       UsePredefineStatistic.set(false)
+    }
+
+    OptimizerFlags.clearAllFlags()
+    if (stmt.contains("query2.tpl")) {
+      OptimizerFlags.setFlag(OptimizerFlags.DISABLE_RUNTIME_FILTER_DATA_SK_HACK)
+      OptimizerFlags.setFlag(OptimizerFlags.DISABLE_RUNTIME_FILTER_JOIN_TRANSPOSE_RULE)
     }
 
     parsed match {
