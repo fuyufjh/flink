@@ -210,7 +210,7 @@ object QueryBenchmark {
           stats
         }
         case _ => {
-          val stats = PredefinedStatistics.loadStats(tableName)
+          val stats = PredefinedStatistics1T.loadStats(tableName)
           if (stats != null) {
             tableStatsMap += (tableName -> stats)
             stats
