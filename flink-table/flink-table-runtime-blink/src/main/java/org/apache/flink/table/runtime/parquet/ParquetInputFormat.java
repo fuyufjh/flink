@@ -22,6 +22,7 @@ import org.apache.flink.api.common.io.FileInputFormat;
 import org.apache.flink.core.fs.FileInputSplit;
 import org.apache.flink.core.fs.FileStatus;
 import org.apache.flink.core.fs.Path;
+import org.apache.flink.streaming.api.operators.StreamingRuntimeContext;
 import org.apache.flink.table.types.logical.LogicalType;
 import org.apache.flink.util.InstantiationUtil;
 import org.apache.flink.util.Preconditions;
@@ -123,10 +124,13 @@ public abstract class ParquetInputFormat<T, R> extends FileInputFormat<T> {
 		TaskAttemptContext taskAttemptContext = new TaskAttemptContextImpl(hadoopConf, attemptId);
 		RecordReader recordReader = createReader(filter);
 
+		threadContext.set((StreamingRuntimeContext) getRuntimeContext());
 		try {
 			recordReader.initialize(split, taskAttemptContext);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
+		} finally {
+			threadContext.remove();
 		}
 		readerIterator = new RecordReaderIterator<>(recordReader);
 	}
@@ -199,4 +203,5 @@ public abstract class ParquetInputFormat<T, R> extends FileInputFormat<T> {
 		return false;
 	}
 
+	public static final ThreadLocal<StreamingRuntimeContext> threadContext = new ThreadLocal<>();
 }

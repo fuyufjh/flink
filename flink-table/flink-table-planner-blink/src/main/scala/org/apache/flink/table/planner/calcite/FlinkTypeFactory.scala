@@ -18,16 +18,15 @@
 
 package org.apache.flink.table.planner.calcite
 
-import org.apache.flink.api.common.typeinfo.{NothingTypeInfo, TypeInformation}
+import org.apache.flink.api.common.typeinfo.{NothingTypeInfo, SqlTimeTypeInfo, TypeInformation}
 import org.apache.flink.api.java.typeutils.TypeExtractor
 import org.apache.flink.table.api.{DataTypes, TableException}
 import org.apache.flink.table.planner.calcite.FlinkTypeFactory.toLogicalType
 import org.apache.flink.table.planner.plan.schema.{GenericRelDataType, _}
 import org.apache.flink.table.types.logical._
-import org.apache.flink.table.typeutils.TimeIndicatorTypeInfo
+import org.apache.flink.table.typeutils.{TimeIndicatorTypeInfo, TimeIntervalTypeInfo}
 import org.apache.flink.types.Nothing
 import org.apache.flink.util.Preconditions.checkArgument
-
 import org.apache.calcite.avatica.util.TimeUnit
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl
 import org.apache.calcite.rel.RelNode
@@ -37,9 +36,10 @@ import org.apache.calcite.sql.`type`.SqlTypeName._
 import org.apache.calcite.sql.`type`.{BasicSqlType, MapSqlType, SqlTypeName, SqlTypeUtil}
 import org.apache.calcite.sql.parser.SqlParserPos
 import org.apache.calcite.util.ConversionUtil
-
 import java.nio.charset.Charset
 import java.util
+
+import org.apache.flink.api.common.typeinfo.BasicTypeInfo._
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -508,5 +508,52 @@ object FlinkTypeFactory {
           .map(fieldType => toLogicalType(fieldType.getType))
           .toArray[LogicalType],
       relType.getFieldNames.asScala.toArray)
+  }
+
+  def toTypeInfo(relDataType: RelDataType): TypeInformation[_] = relDataType.getSqlTypeName match {
+    case BOOLEAN => BOOLEAN_TYPE_INFO
+    case TINYINT => BYTE_TYPE_INFO
+    case SMALLINT => SHORT_TYPE_INFO
+    case INTEGER => INT_TYPE_INFO
+    case BIGINT => LONG_TYPE_INFO
+    case FLOAT => FLOAT_TYPE_INFO
+    case DOUBLE => DOUBLE_TYPE_INFO
+    case VARCHAR | CHAR => STRING_TYPE_INFO
+    case DECIMAL => BIG_DEC_TYPE_INFO
+
+    // time indicators
+    case TIMESTAMP if relDataType.isInstanceOf[TimeIndicatorRelDataType] =>
+      val indicator = relDataType.asInstanceOf[TimeIndicatorRelDataType]
+      if (indicator.isEventTime) {
+        TimeIndicatorTypeInfo.ROWTIME_INDICATOR
+      } else {
+        TimeIndicatorTypeInfo.PROCTIME_INDICATOR
+      }
+
+    // temporal types
+    case DATE => SqlTimeTypeInfo.DATE
+    case TIME => SqlTimeTypeInfo.TIME
+    case TIMESTAMP => SqlTimeTypeInfo.TIMESTAMP
+    case typeName if YEAR_INTERVAL_TYPES.contains(typeName) => TimeIntervalTypeInfo.INTERVAL_MONTHS
+    case typeName if DAY_INTERVAL_TYPES.contains(typeName) => TimeIntervalTypeInfo.INTERVAL_MILLIS
+
+    case NULL =>
+      throw new TableException(
+        "Type NULL is not supported. Null values must have a supported type.")
+
+    // symbol for special flags e.g. TRIM's BOTH, LEADING, TRAILING
+    // are represented as integer
+    case SYMBOL => INT_TYPE_INFO
+
+    // extract encapsulated TypeInformation
+    case ANY if relDataType.isInstanceOf[GenericRelDataType] =>
+      val genericRelDataType = relDataType.asInstanceOf[GenericRelDataType]
+      genericRelDataType.genericType.getTypeInformation
+
+    // CURSOR for UDTF case, whose type info will never be used, just a placeholder
+    case CURSOR => new NothingTypeInfo
+
+    case _@t =>
+      throw new TableException(s"Type is not supported: $t")
   }
 }

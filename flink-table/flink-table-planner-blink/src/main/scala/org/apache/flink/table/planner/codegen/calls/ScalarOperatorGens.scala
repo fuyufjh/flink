@@ -2254,11 +2254,17 @@ object ScalarOperatorGens {
        """.stripMargin)
 
     val (hashCode, hash) = runtimeFilterHash(operands.head)
+    val updateMinMaxCode = operands.head.resultType match {
+      case t if TypeCheckUtils.isLong(t) =>
+        s"$bf.addLongValue(${operands.head.resultTerm});"
+      case _ => ""
+    }
     val code =
       s"""
          |${operands.head.code}
          |$hashCode
          |$bf.addHash($hash);
+         |$updateMinMaxCode
        """.stripMargin
     GeneratedExpression("true", "false", code, new BooleanType())
   }

@@ -18,10 +18,13 @@
 
 package org.apache.flink.table.planner.sources
 
+import java.util
+
 import org.apache.flink.api.common.io.InputFormat
 import org.apache.flink.core.fs.Path
 import org.apache.flink.table.api.{DataTypes, TableSchema}
 import org.apache.flink.table.dataformat.BaseRow
+import org.apache.flink.table.expressions.Expression
 import org.apache.flink.table.plan.stats.TableStats
 import org.apache.flink.table.planner.JSet
 import org.apache.flink.table.runtime.parquet.VectorizedColumnRowInputParquetFormat
@@ -29,8 +32,7 @@ import org.apache.flink.table.runtime.types.LogicalTypeDataTypeConverter.fromDat
 import org.apache.flink.table.sources._
 import org.apache.flink.table.types.DataType
 import org.apache.flink.table.types.logical.LogicalType
-
-import org.apache.parquet.filter2.predicate.FilterPredicate
+import org.apache.parquet.filter2.predicate.{FilterApi, FilterPredicate}
 import org.slf4j.{Logger, LoggerFactory}
 
 /**
@@ -47,20 +49,35 @@ class ParquetTableSource(
     numTimes: Int = 1,
     sourceName: String = "",
     uniqueKeySet: JSet[JSet[String]] = null,
-    selectFields: Array[Int] = null)
-  extends InputFormatTableSource[BaseRow]
+    selectFields: Array[Int] = null,
+    filterPredicate: FilterPredicate = null)
+extends InputFormatTableSource[BaseRow]
   with ProjectableTableSource[BaseRow] {
+
+  // To be compatible with QueryBenchmark
+  @deprecated
+  def this(
+            schema: TableSchema,
+            filePath: Path,
+            enumerateNestedFiles: Boolean,
+            numTimes: Int,
+            sourceName: String,
+            uniqueKeySet: JSet[JSet[String]],
+            selectFields: Array[Int]) {
+    this(schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, selectFields, null);
+  }
 
   lazy val LOG: Logger = LoggerFactory.getLogger(getClass)
 
   private var cachedStats: Option[TableStats] = None
 
   protected var limit: Long = Long.MaxValue
-  protected var filterPredicate: FilterPredicate = _
+
+  def isFilterPushedDown: Boolean = filterPredicate != null
 
   override def projectFields(fields: Array[Int]): ParquetTableSource = {
     new ParquetTableSource(
-      schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, fields)
+      schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, fields, filterPredicate)
   }
 
   private def selectFieldDataTypes(): Array[DataType] = {
@@ -127,5 +144,57 @@ class ParquetTableSource(
         cachedStats = Some(stats)
         stats
     }
+  }
+
+  def applyPredicate(predicates: util.List[Expression]): TableSource[BaseRow] = {
+    // try to convert Flink filter expressions to Parquet FilterPredicates
+    val convertedPredicates = new util.ArrayList[FilterPredicate](predicates.size)
+
+    import scala.collection.JavaConversions._
+
+    for (toConvert <- predicates) {
+      val convertedPredicate = ParquetTableSourceUtil.toParquetPredicate(toConvert)
+      if (convertedPredicate != null) {
+        convertedPredicates.add(convertedPredicate)
+      }
+    }
+
+    // construct single Parquet FilterPredicate
+    var parquetPredicate: FilterPredicate = null
+    if (!convertedPredicates.isEmpty) { // concat converted predicates with AND
+      parquetPredicate = convertedPredicates.get(0)
+      for (converted <- convertedPredicates.subList(1, convertedPredicates.size)) {
+        parquetPredicate = FilterApi.and(parquetPredicate, converted)
+      }
+    }
+
+    if (parquetPredicate != null) {
+      new ParquetTableSource(
+        schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, selectFields, parquetPredicate)
+    } else {
+      this
+    }
+  }
+
+  override def explainSource(): String = {
+    val schemaString = schema.getFieldNames.mkString("[", ", ", "]")
+    val predicateString = if (filterPredicate != null) filterPredicate.toString else "TRUE"
+    val fieldsString = if (selectFields != null) selectFields.mkString("[", ", ", "]") else "[]"
+    s"ParquetTableSource[schema=$schemaString, fields=$fieldsString, filter=$predicateString]"
+  }
+
+  def applyRuntimeFilter(broadcastId: String, columnIndex: Int): ParquetTableSource = {
+    val udp = new RuntimeFilterUDP(broadcastId)
+    val field = selectFieldNames()(columnIndex)
+    val additionalPredicate = FilterApi.userDefined(FilterApi.longColumn(field), udp)
+
+    val filterPredicateNew = if (filterPredicate == null) {
+      additionalPredicate
+    } else {
+      FilterApi.and(filterPredicate, additionalPredicate)
+    }
+
+    new ParquetTableSource(
+      schema, filePath, enumerateNestedFiles, numTimes, sourceName, uniqueKeySet, selectFields, filterPredicateNew)
   }
 }

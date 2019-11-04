@@ -77,6 +77,6 @@ class TableSourceTable[T](
     * @return new TableSourceTable
     */
   def replaceTableSource(tableSource: TableSource[T]): TableSourceTable[T] = {
-    new TableSourceTable[T](tableSource, isStreamingMode, statistic)
+    new TableSourceTable[T](tableSource, isStreamingMode, statistic, selectedFields)
   }
 }
