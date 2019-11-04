@@ -338,7 +338,7 @@ class FlinkRelOptTable protected(
   def getPreDefinedStatistics: FlinkStatistic = {
     if (predefinedStatistics != null)
       return predefinedStatistics
-    val tableStats = PredefinedStatistics.loadStats(names.get(names.size()-1).toLowerCase)
+    val tableStats = PredefinedStatistics1T.loadStats(names.get(names.size()-1).toLowerCase)
     predefinedStatistics = new FlinkStatistic(tableStats)
     return predefinedStatistics
   }

@@ -33,7 +33,7 @@ import org.apache.flink.table.examples.java.Benchmark
 import org.apache.flink.table.examples.scala.QueryBenchmark.SOURCE_TYPE.SOURCE_TYPE
 import org.apache.flink.table.examples.scala.QueryBenchmark.SQL_TYPE.SQL_TYPE
 import org.apache.flink.table.plan.stats.TableStats
-import org.apache.flink.table.planner.plan.schema.PredefinedStatistics
+import org.apache.flink.table.planner.plan.schema.{PredefinedStatistics, PredefinedStatistics1T}
 import org.apache.flink.table.planner.plan.stats.StatisticGenerator
 import org.apache.flink.table.planner.sources.ParquetTableSource
 import org.apache.flink.table.planner.utils.TableStatsConverter

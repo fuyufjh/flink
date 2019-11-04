@@ -132,12 +132,7 @@ abstract class PlannerBase(
       AggPhaseStrategy.set(AggregatePhaseStrategy.AUTO);
     }
 
-    if (planner.parse(UsePredefineStatistic.q25).toString.equals(parsed.toString) ||
-      planner.parse(UsePredefineStatistic.q98).toString.equals(parsed.toString)) {
-      UsePredefineStatistic.set(true)
-    } else {
-      UsePredefineStatistic.set(false)
-    }
+    UsePredefineStatistic.set(true)
 
     OptimizerFlags.clearAllFlags()
     if (stmt.contains("query2.tpl")) {
