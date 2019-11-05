@@ -18,8 +18,12 @@
 
 package org.apache.flink.table.planner.plan.nodes.physical.stream
 
+import org.apache.flink.api.common.io.InputFormat
+import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.dag.Transformation
+import org.apache.flink.core.io.InputSplit
 import org.apache.flink.streaming.api.datastream.DataStream
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
 import org.apache.flink.streaming.api.functions.{AssignerWithPeriodicWatermarks, AssignerWithPunctuatedWatermarks}
 import org.apache.flink.streaming.api.watermark.Watermark
 import org.apache.flink.table.api.{DataTypes, TableException}
@@ -50,15 +54,15 @@ import java.util
 import scala.collection.JavaConversions._
 
 /**
-  * Stream physical RelNode to read data from an external source defined by a [[StreamTableSource]].
-  */
+ * Stream physical RelNode to read data from an external source defined by a [[StreamTableSource]].
+ */
 class StreamExecTableSourceScan(
-    cluster: RelOptCluster,
-    traitSet: RelTraitSet,
-    relOptTable: FlinkRelOptTable)
+                                 cluster: RelOptCluster,
+                                 traitSet: RelTraitSet,
+                                 relOptTable: FlinkRelOptTable)
   extends PhysicalTableSourceScan(cluster, traitSet, relOptTable)
-  with StreamPhysicalRel
-  with StreamExecNode[BaseRow] {
+    with StreamPhysicalRel
+    with StreamExecNode[BaseRow] {
 
   override def producesUpdates: Boolean = false
 
@@ -87,13 +91,13 @@ class StreamExecTableSourceScan(
   }
 
   override def replaceInputNode(
-      ordinalInParent: Int,
-      newInputNode: ExecNode[StreamPlanner, _]): Unit = {
+                                 ordinalInParent: Int,
+                                 newInputNode: ExecNode[StreamPlanner, _]): Unit = {
     replaceInput(ordinalInParent, newInputNode.asInstanceOf[RelNode])
   }
 
   override protected def translateToPlanInternal(
-      planner: StreamPlanner): Transformation[BaseRow] = {
+                                                  planner: StreamPlanner): Transformation[BaseRow] = {
     val config = planner.getTableConfig
     val inputTransform = getSourceTransformation(planner.getExecEnv)
 
@@ -183,17 +187,26 @@ class StreamExecTableSourceScan(
     ScanUtil.hasTimeAttributeField(fieldIndexes) ||
       ScanUtil.needsConversion(tableSource.getProducedDataType)
   }
+
+  override def createInput[IN](
+                                env: StreamExecutionEnvironment,
+                                format: InputFormat[IN, _ <: InputSplit],
+                                t: TypeInformation[IN]): Transformation[IN] = {
+    // See StreamExecutionEnvironment.createInput, it is better to deal with checkpoint.
+    // The disadvantage is that streaming not support multi-paths.
+    env.createInput(format, t).name(tableSource.explainSource()).getTransformation
+  }
 }
 
 /**
-  * Generates periodic watermarks based on a [[PeriodicWatermarkAssigner]].
-  *
-  * @param timeFieldIdx the index of the rowtime attribute.
-  * @param assigner the watermark assigner.
-  */
+ * Generates periodic watermarks based on a [[PeriodicWatermarkAssigner]].
+ *
+ * @param timeFieldIdx the index of the rowtime attribute.
+ * @param assigner the watermark assigner.
+ */
 private class PeriodicWatermarkAssignerWrapper(
-    timeFieldIdx: Int,
-    assigner: PeriodicWatermarkAssigner)
+                                                timeFieldIdx: Int,
+                                                assigner: PeriodicWatermarkAssigner)
   extends AssignerWithPeriodicWatermarks[BaseRow] {
 
   override def getCurrentWatermark: Watermark = assigner.getWatermark
@@ -206,15 +219,15 @@ private class PeriodicWatermarkAssignerWrapper(
 }
 
 /**
-  * Generates periodic watermarks based on a [[PunctuatedWatermarkAssigner]].
-  *
-  * @param timeFieldIdx the index of the rowtime attribute.
-  * @param assigner the watermark assigner.
-  */
+ * Generates periodic watermarks based on a [[PunctuatedWatermarkAssigner]].
+ *
+ * @param timeFieldIdx the index of the rowtime attribute.
+ * @param assigner the watermark assigner.
+ */
 private class PunctuatedWatermarkAssignerWrapper(
-    timeFieldIdx: Int,
-    assigner: PunctuatedWatermarkAssigner,
-    sourceType: DataType)
+                                                  timeFieldIdx: Int,
+                                                  assigner: PunctuatedWatermarkAssigner,
+                                                  sourceType: DataType)
   extends AssignerWithPunctuatedWatermarks[BaseRow] {
 
   private val converter =

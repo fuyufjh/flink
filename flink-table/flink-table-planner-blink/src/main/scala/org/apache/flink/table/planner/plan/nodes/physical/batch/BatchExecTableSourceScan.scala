@@ -18,8 +18,13 @@
 
 package org.apache.flink.table.planner.plan.nodes.physical.batch
 
+import org.apache.flink.api.common.io.InputFormat
+import org.apache.flink.api.common.typeinfo.TypeInformation
 import org.apache.flink.api.dag.Transformation
+import org.apache.flink.core.io.InputSplit
 import org.apache.flink.runtime.operators.DamBehavior
+import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment
+import org.apache.flink.streaming.api.functions.source.InputFormatSourceFunction
 import org.apache.flink.table.api.TableException
 import org.apache.flink.table.dataformat.BaseRow
 import org.apache.flink.table.planner.codegen.CodeGeneratorContext
@@ -42,16 +47,16 @@ import java.{lang, util}
 import scala.collection.JavaConversions._
 
 /**
-  * Batch physical RelNode to read data from an external source defined by a
-  * bounded [[StreamTableSource]].
-  */
+ * Batch physical RelNode to read data from an external source defined by a
+ * bounded [[StreamTableSource]].
+ */
 class BatchExecTableSourceScan(
-    cluster: RelOptCluster,
-    traitSet: RelTraitSet,
-    relOptTable: FlinkRelOptTable)
+                                cluster: RelOptCluster,
+                                traitSet: RelTraitSet,
+                                relOptTable: FlinkRelOptTable)
   extends PhysicalTableSourceScan(cluster, traitSet, relOptTable)
-  with BatchPhysicalRel
-  with BatchExecNode[BaseRow]{
+    with BatchPhysicalRel
+    with BatchExecNode[BaseRow]{
 
   override def copy(traitSet: RelTraitSet, inputs: util.List[RelNode]): RelNode = {
     new BatchExecTableSourceScan(cluster, traitSet, relOptTable)
@@ -75,13 +80,13 @@ class BatchExecTableSourceScan(
   override def getInputNodes: util.List[ExecNode[BatchPlanner, _]] = List()
 
   override def replaceInputNode(
-      ordinalInParent: Int,
-      newInputNode: ExecNode[BatchPlanner, _]): Unit = {
+                                 ordinalInParent: Int,
+                                 newInputNode: ExecNode[BatchPlanner, _]): Unit = {
     replaceInput(ordinalInParent, newInputNode.asInstanceOf[RelNode])
   }
 
   override protected def translateToPlanInternal(
-      planner: BatchPlanner): Transformation[BaseRow] = {
+                                                  planner: BatchPlanner): Transformation[BaseRow] = {
     val config = planner.getTableConfig
     val inputTransform = getSourceTransformation(planner.getExecEnv)
 
@@ -135,5 +140,17 @@ class BatchExecTableSourceScan(
 
   def getEstimatedRowCount: lang.Double = {
     getCluster.getMetadataQuery.getRowCount(this)
+  }
+
+  override def createInput[IN](
+                                env: StreamExecutionEnvironment,
+                                format: InputFormat[IN, _ <: InputSplit],
+                                t: TypeInformation[IN]): Transformation[IN] = {
+    // env.createInput will use ContinuousFileReaderOperator, but it do not support multiple
+    // paths. If read partitioned source, after partition pruning, we need let InputFormat
+    // to read multiple partitions which are multiple paths.
+    // We can use InputFormatSourceFunction directly to support InputFormat.
+    val func = new InputFormatSourceFunction[IN](format, t)
+    env.addSource(func, tableSource.explainSource(), t).getTransformation
   }
 }
