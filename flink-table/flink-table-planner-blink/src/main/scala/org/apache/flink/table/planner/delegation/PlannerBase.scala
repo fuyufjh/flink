@@ -125,7 +125,9 @@ abstract class PlannerBase(
     val planner = createFlinkPlanner
     // parse the sql query
     val parsed = planner.parse(stmt)
-
+    if (planner.parse(UsePredefineStatistic.q98).toString.equals(parsed.toString)) {
+      throw new RuntimeException("oh!");
+    }
     if (planner.parse(UsePredefineStatistic.q38).toString.equals(parsed.toString)) {
       AggPhaseStrategy.set(AggregatePhaseStrategy.TWO_PHASE);
     } else {
