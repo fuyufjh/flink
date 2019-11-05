@@ -267,7 +267,7 @@ object FlinkBatchRuleSets {
     // remove aggregation if it does not aggregate and input is already distinct
     FlinkAggregateRemoveRule.INSTANCE,
     // push aggregate through join
-//    FlinkAggregateJoinTransposeRule.EXTENDED,
+    FlinkAggregateJoinTransposeRule.EXTENDED,
     // aggregate union rule
     AggregateUnionAggregateRule.INSTANCE,
     // expand distinct aggregate to normal aggregate with groupby
