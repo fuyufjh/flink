@@ -18,15 +18,23 @@
 
 package org.apache.flink.table.planner.plan.rules.logical
 
-import org.apache.flink.table.planner.plan.utils.FlinkRexUtil
+import java.util
 
+import org.apache.flink.table.planner.plan.utils.FlinkRexUtil
 import org.apache.calcite.plan.RelOptRule.{any, operand}
-import org.apache.calcite.plan.{RelOptRule, RelOptRuleCall}
+import org.apache.calcite.plan.{RelOptRule, RelOptRuleCall, RelOptUtil}
+import org.apache.calcite.rel.RelNode
 import org.apache.calcite.rel.core.{Calc, RelFactories}
-import org.apache.calcite.rex.{RexOver, RexProgramBuilder, RexUtil}
+import org.apache.calcite.rel.logical.LogicalFilter
+import org.apache.calcite.rel.metadata.{RelMdUtil, RelMetadataQuery}
+import org.apache.calcite.rex.{RexBuilder, RexCall, RexNode, RexOver, RexProgramBuilder, RexUtil}
 import org.apache.calcite.tools.RelBuilderFactory
+import org.apache.calcite.util.ImmutableBitSet
+import org.apache.flink.table.functions.sql.internal.{SqlRuntimeFilterBuilderFunction, SqlRuntimeFilterFunction}
+import org.apache.flink.table.planner.plan.rules.physical.runtimefilter.RfBuilderJoinTransposeRule.getIndexFromCall
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 /**
   * This rule is copied from Calcite's [[org.apache.calcite.rel.rules.CalcMergeRule]].
@@ -79,12 +87,13 @@ class FlinkCalcMergeRule(relBuilderFactory: RelBuilderFactory) extends RelOptRul
     val newMergedProgram = if (mergedProgram.getCondition != null) {
       val condition = mergedProgram.expandLocalRef(mergedProgram.getCondition)
       val simplifiedCondition = FlinkRexUtil.simplify(rexBuilder, condition)
-      if (simplifiedCondition.toString == condition.toString) {
+      val reorderedCondition = reorderRuntimeFilters(rexBuilder, simplifiedCondition, topCalc.getCluster.getMetadataQuery, bottomCalc.getInput)
+      if (reorderedCondition.toString == condition.toString) {
         mergedProgram
       } else {
         val programBuilder = RexProgramBuilder.forProgram(mergedProgram, rexBuilder, true)
         programBuilder.clearCondition()
-        programBuilder.addCondition(simplifiedCondition)
+        programBuilder.addCondition(reorderedCondition)
         programBuilder.getProgram(true)
       }
     } else {
@@ -99,6 +108,39 @@ class FlinkCalcMergeRule(relBuilderFactory: RelBuilderFactory) extends RelOptRul
       call.getPlanner.setImportance(topCalc, 0.0)
     }
     call.transformTo(newCalc)
+  }
+
+  private def reorderRuntimeFilters(rexBuilder: RexBuilder, condition: RexNode,
+                                    mq: RelMetadataQuery, input: RelNode): RexNode = {
+    val before = RelOptUtil.conjunctions(condition)
+    val rfCalls = new mutable.ArrayBuffer[RexNode]
+    val rfBuilderCalls = new mutable.ArrayBuffer[RexNode]
+    val others = new mutable.ArrayBuffer[RexNode]
+    before.foreach {
+      case call: RexCall if call.getOperator.isInstanceOf[SqlRuntimeFilterFunction] => rfCalls.add(call)
+      case call: RexCall if call.getOperator.isInstanceOf[SqlRuntimeFilterBuilderFunction] => rfBuilderCalls.add(call)
+      case other => others.add(other)
+    }
+
+    if (rfCalls.isEmpty && rfBuilderCalls.isEmpty) {
+      return condition // do not need to reorder
+    }
+
+    /*
+    if (rfBuilderCalls.nonEmpty) {
+      // update ndv & rowCount of RuntimeFilterBuilder
+      val pred = RexUtil.composeConjunction(rexBuilder, rfCalls ++ others)
+      val rowCount = RelMdUtil.estimateFilteredRows(input, pred, mq)
+      for (rfb <- rfBuilderCalls) {
+        val rfbf = rfb.asInstanceOf[RexCall].getOperator.asInstanceOf[SqlRuntimeFilterBuilderFunction]
+        rfbf.rowCount = rowCount
+        val fieldIndex = getIndexFromCall(rfb.asInstanceOf[RexCall])
+        rfbf.ndv = mq.getDistinctRowCount(input, ImmutableBitSet.of(fieldIndex), pred)
+      }
+    }
+    */
+
+    RexUtil.composeConjunction(rexBuilder, others ++ rfCalls ++ rfBuilderCalls)
   }
 
 }

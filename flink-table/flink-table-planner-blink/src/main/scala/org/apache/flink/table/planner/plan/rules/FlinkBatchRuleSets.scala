@@ -22,11 +22,11 @@ import org.apache.flink.table.planner.plan.nodes.logical._
 import org.apache.flink.table.planner.plan.rules.logical._
 import org.apache.flink.table.planner.plan.rules.physical.FlinkExpandConversionRule
 import org.apache.flink.table.planner.plan.rules.physical.batch._
-
 import org.apache.calcite.rel.core.RelFactories
 import org.apache.calcite.rel.logical.{LogicalIntersect, LogicalMinus, LogicalUnion}
 import org.apache.calcite.rel.rules._
 import org.apache.calcite.tools.{RuleSet, RuleSets}
+import org.apache.flink.table.planner.plan.rules.physical.other.CalcUnionTransposeRule
 import org.apache.flink.table.planner.plan.rules.physical.runtimefilter._
 
 import scala.collection.JavaConverters._
@@ -409,13 +409,19 @@ object FlinkBatchRuleSets {
     RuntimeFilterExchangeTransposeRule.INSTANCE,
     RfBuilderExchangeTransposeRule.INSTANCE,
     RfBuilderJoinTransposeRule.INSTANCE,
+    RuntimeFilterJoinTransposeRule.INSTANCE,
     RuntimeFilterBuilderMerger.INSTANCE,
-    FlinkCalcMergeRule.INSTANCE
+    FlinkCalcMergeRule.INSTANCE,
+    CalcUnionTransposeRule.INSTANCE
   )
 
   val RUNTIME_FILTER_REMOVE_RULES: RuleSet = RuleSets.ofList(
     UselessRuntimeFilterRemoveRule.INSTANCE,
     UselessRfBuilderRemoveRule.INSTANCE,
     FlinkCalcRemoveRule.INSTANCE
+  )
+
+  val RUNTIME_FILTER_TABLE_SCAN_RULE: RuleSet = RuleSets.ofList(
+    RuntimeFilterTableScanRule.INSTANCE
   )
 }

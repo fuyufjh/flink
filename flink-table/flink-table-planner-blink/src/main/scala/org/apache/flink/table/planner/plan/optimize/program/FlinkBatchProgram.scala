@@ -230,6 +230,11 @@ object FlinkBatchProgram {
             .setHepMatchOrder(HepMatchOrder.BOTTOM_UP)
             .add(FlinkBatchRuleSets.RUNTIME_FILTER_REMOVE_RULES)
             .build(), "runtime filter remove useless")
+        .addProgram(
+          FlinkHepRuleSetProgramBuilder.newBuilder
+            .setHepRulesExecutionType(HEP_RULES_EXECUTION_TYPE.RULE_SEQUENCE)
+            .add(FlinkBatchRuleSets.RUNTIME_FILTER_TABLE_SCAN_RULE)
+            .build(), "runtime filter push down into table scan")
         .build())
 
     chainedProgram

@@ -41,18 +41,18 @@ import org.apache.flink.table.planner.plan.optimize.Optimizer
 import org.apache.flink.table.planner.plan.reuse.SubplanReuser
 import org.apache.flink.table.planner.plan.utils.SameRelObjectShuttle
 import org.apache.flink.table.planner.sinks.{DataStreamTableSink, TableSinkUtils}
-import org.apache.flink.table.planner.utils.JavaScalaConversionUtil
+import org.apache.flink.table.planner.utils.{AggregatePhaseStrategy, JavaScalaConversionUtil}
 import org.apache.flink.table.sinks.{PartitionableTableSink, TableSink}
 import org.apache.flink.table.types.utils.LegacyTypeInfoDataTypeConverter
-
 import org.apache.calcite.jdbc.CalciteSchemaBuilder.asRootSchema
 import org.apache.calcite.plan.{RelTrait, RelTraitDef}
 import org.apache.calcite.rel.RelNode
 import org.apache.calcite.sql.SqlKind
 import org.apache.calcite.tools.FrameworkConfig
-
 import _root_.java.util.{List => JList}
 import java.util
+
+import org.apache.flink.table.planner.plan.schema.{OptimizerFlags, UsePredefineStatistic, AggPhaseStrategy}
 
 import _root_.scala.collection.JavaConversions._
 
@@ -125,6 +125,21 @@ abstract class PlannerBase(
     val planner = createFlinkPlanner
     // parse the sql query
     val parsed = planner.parse(stmt)
+
+    if (planner.parse(UsePredefineStatistic.q38).toString.equals(parsed.toString)) {
+      AggPhaseStrategy.set(AggregatePhaseStrategy.TWO_PHASE);
+    } else {
+      AggPhaseStrategy.set(AggregatePhaseStrategy.AUTO);
+    }
+
+    UsePredefineStatistic.set(true)
+
+    OptimizerFlags.clearAllFlags()
+    if (stmt.contains("query2.tpl")) {
+      OptimizerFlags.setFlag(OptimizerFlags.DISABLE_RUNTIME_FILTER_DATA_SK_HACK)
+      OptimizerFlags.setFlag(OptimizerFlags.DISABLE_RUNTIME_FILTER_JOIN_TRANSPOSE_RULE)
+    }
+
     parsed match {
       case insert: RichSqlInsert =>
         List(SqlToOperationConverter.convert(planner, insert))

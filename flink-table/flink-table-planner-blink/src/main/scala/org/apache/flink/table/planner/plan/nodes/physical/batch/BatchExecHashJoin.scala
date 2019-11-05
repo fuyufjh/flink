@@ -243,8 +243,8 @@ class BatchExecHashJoin(
         buildKeys,
         probeKeys,
         managedMemory,
-        0,
-        0,
+        managedMemory * 2,
+        16 * NodeResourceUtil.SIZE_IN_MB,
         buildRowSize,
         buildRowCount,
         reverseJoin,
@@ -252,8 +252,8 @@ class BatchExecHashJoin(
     } else {
       SimpleOperatorFactory.of(HashJoinOperator.newHashJoinOperator(
         managedMemory,
-        0,
-        0,
+        managedMemory * 2,
+        16 * NodeResourceUtil.SIZE_IN_MB,
         hashJoinType,
         condFunc,
         reverseJoin,
