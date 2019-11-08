@@ -24,6 +24,7 @@ import org.apache.flink.core.memory.MemorySegmentFactory;
 import org.apache.flink.core.memory.MemoryType;
 import org.apache.flink.util.MathUtils;
 
+import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * The memory manager governs the memory that Flink uses for sorting, hashing, and caching. Memory
@@ -669,8 +671,31 @@ public class MemoryManager {
 			this.availableMemory = new ArrayDeque<>(numInitialSegments);
 			this.segmentSize = segmentSize;
 
-			for (int i = 0; i < numInitialSegments; i++) {
-				this.availableMemory.add(ByteBuffer.allocateDirect(segmentSize));
+			final int total = numInitialSegments;
+			final int cpuCores = 100;
+			final int perPages = total / cpuCores;
+			final CountDownLatch latch = new CountDownLatch(cpuCores);
+			final ArrayList<ByteBuffer>[] bufLists = new ArrayList[cpuCores];
+			for(int i = 0; i < cpuCores; i++) {
+				final int x = i;
+				new Thread(()->{
+					bufLists[x] = new ArrayList<>(perPages);
+					ArrayList<ByteBuffer> bufList = bufLists[x];
+					ByteBuffer pre = MemoryUtil.memAlloc(perPages * segmentSize);
+					for(int n = 0; n < perPages; n++) {
+						bufList.add(MemoryUtil.memSlice(pre, n * segmentSize, segmentSize));
+					}
+					LOG.info("{} MB and {} segments allocated", ((perPages * segmentSize)/(1 << 20)), perPages);
+					latch.countDown();
+				}).start();
+			}
+			try {
+				latch.await();
+				for(ArrayList<ByteBuffer> bufList : bufLists) {
+					availableMemory.addAll(bufList);
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 
