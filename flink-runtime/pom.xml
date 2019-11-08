@@ -35,7 +35,12 @@ under the License.
 	<packaging>jar</packaging>
 
 	<dependencies>
-
+		<!-- https://mvnrepository.com/artifact/org.lwjgl/lwjgl -->
+		<dependency>
+			<groupId>org.lwjgl</groupId>
+			<artifactId>lwjgl</artifactId>
+			<version>3.2.3</version>
+		</dependency>
 		<!-- core dependencies -->
 
 		<dependency>

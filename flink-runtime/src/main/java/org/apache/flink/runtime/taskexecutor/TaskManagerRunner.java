@@ -67,15 +67,8 @@ import org.apache.flink.util.ExecutorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -277,10 +270,6 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 	// --------------------------------------------------------------------------------------------
 
 	public static void main(String[] args) throws Exception {
-		// vmstat, iostat -> /home/hadoop/flink-1.9-tpcds-master/log/
-		osMonitor("vmstat", "vmstat 1 2000");
-		osMonitor("iostat", "iostat -xtc 1 2000");
-
 		// startup checks and logging
 		EnvironmentInformation.logEnvironmentInfo(LOG, "TaskManager", args);
 		SignalHandler.register(LOG);
@@ -430,42 +419,6 @@ public class TaskManagerRunner implements FatalErrorHandler, AutoCloseableAsync 
 			return configuredTaskManagerHostname;
 		} else {
 			return determineTaskManagerBindAddressByConnectingToResourceManager(configuration, haServices);
-		}
-	}
-
-	private static void osMonitor(String fileName, String cmd) throws IOException {
-		File logDir = new File("/disk/1/flink-1.9-tpcds-master/log/");
-		if(logDir.exists() && logDir.isDirectory()) {
-			File osLog = new File(logDir, fileName + ".log");
-			osLog.createNewFile();
-			// start vmstat log
-			new Thread(()->{
-				runProcess(osLog, cmd);
-			}).start();
-		} else {
-			LOG.info(logDir.getAbsolutePath() + " does not exist");
-		}
-	}
-
-	private static void runProcess(File file, String cmd) {
-		try {
-			Process ps = Runtime.getRuntime().exec(cmd);
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream(), Charset.forName("GBK")));
-			PrintStream out = new PrintStream(new FileOutputStream(file));
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				out.println(line);
-			}
-
-			br.close();
-			ps.waitFor();
-			LOG.info(cmd + " wait over ...");
-
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 	}
 

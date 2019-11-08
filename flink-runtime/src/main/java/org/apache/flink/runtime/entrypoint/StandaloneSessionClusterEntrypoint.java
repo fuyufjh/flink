@@ -27,6 +27,14 @@ import org.apache.flink.runtime.util.EnvironmentInformation;
 import org.apache.flink.runtime.util.JvmShutdownSafeguard;
 import org.apache.flink.runtime.util.SignalHandler;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.nio.charset.Charset;
+
 /**
  * Entry point for the standalone session cluster.
  */
@@ -42,6 +50,9 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
 	}
 
 	public static void main(String[] args) {
+		// vmstat, iostat -> /home/hadoop/flink-1.9-tpcds-master/log/
+		osMonitor("vmstat", "vmstat 1 2000");
+		osMonitor("iostat", "iostat -xtc 1 2000");
 		// startup checks and logging
 		EnvironmentInformation.logEnvironmentInfo(LOG, StandaloneSessionClusterEntrypoint.class.getSimpleName(), args);
 		SignalHandler.register(LOG);
@@ -63,5 +74,45 @@ public class StandaloneSessionClusterEntrypoint extends SessionClusterEntrypoint
 		StandaloneSessionClusterEntrypoint entrypoint = new StandaloneSessionClusterEntrypoint(configuration);
 
 		ClusterEntrypoint.runClusterEntrypoint(entrypoint);
+	}
+
+	private static void osMonitor(String fileName, String cmd) {
+		File logDir = new File("/disk/1/flink-1.9-tpcds-master/log/");
+		if(logDir.exists() && logDir.isDirectory()) {
+			File osLog = new File(logDir, fileName + ".log");
+			try {
+				osLog.createNewFile();
+				// start vmstat log
+				new Thread(()->{
+					runProcess(osLog, cmd);
+				}).start();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			LOG.info(logDir.getAbsolutePath() + " does not exist");
+		}
+	}
+
+	private static void runProcess(File file, String cmd) {
+		try {
+			Process ps = Runtime.getRuntime().exec(cmd);
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(ps.getInputStream(), Charset.forName("GBK")));
+			PrintStream out = new PrintStream(new FileOutputStream(file));
+			String line = null;
+			while ((line = br.readLine()) != null) {
+				out.println(line);
+			}
+
+			br.close();
+			ps.waitFor();
+			LOG.info(cmd + " wait over ...");
+
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 }
