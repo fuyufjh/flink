@@ -126,12 +126,6 @@ abstract class PlannerBase(
     // parse the sql query
     val parsed = planner.parse(stmt)
 
-    if (planner.parse(UsePredefineStatistic.q38).toString.equals(parsed.toString)) {
-      AggPhaseStrategy.set(AggregatePhaseStrategy.TWO_PHASE);
-    } else {
-      AggPhaseStrategy.set(AggregatePhaseStrategy.AUTO);
-    }
-
     UsePredefineStatistic.set(true)
 
     OptimizerFlags.clearAllFlags()
